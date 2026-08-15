@@ -64,7 +64,7 @@ def build_event_sequences(
 
         # Determine the dominant part for this student (most frequent part_id)
         if 'part' in ev.columns:
-            task_ids[i] = int(ev['part'].mode().iloc) - 1  # 0-indexed
+            task_ids[i] = int(ev['part'].mode().iloc[0]) - 1  # 0-indexed
         else:
             task_ids[i] = 0
 

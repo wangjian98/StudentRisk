@@ -1,0 +1,16 @@
+{
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "n_splits": 5,
+  "threshold": 0.5,
+  "rf_cfg": {
+    "n_estimators": 200,
+    "max_depth": 10,
+    "min_samples_split": 5,
+    "class_weight": "balanced"
+  },
+  "feature_dimension": 7
+}

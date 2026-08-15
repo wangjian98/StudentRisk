@@ -22,10 +22,12 @@ if _ROOT not in sys.path:
 
 
 MODEL_RUNNERS = {
-    'rf':        ('models.rf.train', 'run'),
-    'lstm':      ('models.lstm.train', 'run'),
-    'bilstm':    ('models.bilstm.train', 'run'),
-    'attention': ('models.attention.train', 'run'),
+    'rf':         ('models.rf.train', 'run'),
+    'rf7':        ('models.rf7.train', 'run'),
+    'lstm':       ('models.lstm.train', 'run'),
+    'bilstm':     ('models.bilstm.train', 'run'),
+    'attention':  ('models.attention.train', 'run'),
+    'meta_mamba': ('models.meta_mamba.train', 'run'),
 }
 
 
@@ -72,7 +74,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument('--model', nargs='+', default=['all'],
-                        choices=['all', 'rf', 'lstm', 'bilstm', 'attention'],
+                        choices=['all', 'rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba'],
                         help='Model(s) to run. Use "all" for all 4 models.')
     parser.add_argument('--seeds', nargs='+', type=int, default=None,
                         help='Random seeds for CV (default from configs/default.yaml)')
@@ -97,7 +99,7 @@ def main():
 
     # Determine which models to run
     if 'all' in args.model:
-        names = ['rf', 'lstm', 'bilstm', 'attention']
+        names = ['rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba']
     else:
         names = [m for m in args.model if m != 'all']
 
