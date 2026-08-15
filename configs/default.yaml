@@ -1,0 +1,50 @@
+# Default hyperparameters for all models
+data:
+  ide_logs_path: /home/ubuntu/IDE_logs/IDE_logs.csv
+  passed_path:  /home/ubuntu/IDE_logs/passed.csv
+
+cv:
+  n_splits: 5
+  seeds: [42, 123, 777]
+
+random_forest:
+  n_estimators: 200
+  max_depth: 10
+  min_samples_split: 5
+  class_weight: balanced
+
+lstm:
+  hidden_dim: 64
+  num_layers: 1
+  dropout: 0.3
+  lr: 0.001
+  weight_decay: 0.001
+  epochs: 60
+  batch_size: 32
+  patience: 12
+
+bilstm:
+  hidden_dim: 64
+  num_layers: 1
+  dropout: 0.3
+  lr: 0.001
+  weight_decay: 0.001
+  epochs: 60
+  batch_size: 32
+  patience: 12
+
+attention:
+  d_model: 64
+  n_heads: 4
+  n_layers: 2
+  dim_feedforward: 128
+  dropout: 0.3
+  lr: 0.001
+  weight_decay: 0.001
+  epochs: 60
+  batch_size: 32
+  patience: 12
+
+threshold:
+  default: 0.5
+  search_grid: [0.30, 0.35, 0.39, 0.45, 0.50, 0.55]
