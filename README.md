@@ -3,10 +3,13 @@
 基于学生 IDE 编程日志预测课程是否通过 / 挂科（Early Dropout/Failure Prediction）。
 
 ## 数据集
-- **来源**：CS1 公开课程日志（来自 CodeEMO 项目）
+- **来源**：CS1 公开课程日志（与 CodeEMO 项目共享）
 - **样本**：473 名学生（其中 failed=314 / passed=159，不平衡比 ≈ 2:1）
 - **原始事件**：28,588,310 条 IDE 事件，7 种事件类型
-- **特征维度**：46 维（28 事件基础统计 + 10 行为轨迹 + 6 情绪复合 + 2 元信息）
+- **特征维度对比**：
+  - **7 维原始**：7 种事件类型的 one-hot 序列 / 计数（无聚合）
+  - **11 维时序**：7 维 one-hot + 时间间隔 + 截止距离 + 题号 + 练习号（仅 MetaMamba）
+  - **46 维聚合**：28 事件统计 + 10 行为轨迹 + 6 情绪复合 + 2 元信息（paper-aligned 手工特征）
 
 ## Label 规范（重要）
 - **Failed = 1**（挂科）
@@ -15,39 +18,113 @@
 - 即 `probs[i] = P(failed=i)`，与 `passed.csv` 中 `passed` 字段互补
 
 ## 项目结构
+
 ```
 StudentRisk/
-├── main.py                      # 统一入口: --model {all,rf,lstm,bilstm,attention}
+├── README.md
+├── requirements.txt
+├── main.py                      # 统一入口: --model {all,<10 models>}
 ├── configs/default.yaml         # 默认超参数
 ├── data/                        # 数据加载与特征工程
-├── models/{rf,lstm,bilstm,attention}/   # 4 个模型（各自可独立运行）
-├── results/{rf,lstm,bilstm,attention}/  # 每个模型独立结果目录
+│   ├── __init__.py
+│   ├── data_loader.py           # 加载 IDE_logs + passed.csv, Failed=1 标签转换
+│   └── features.py              # 46 维手工特征
+├── models/                      # 10 个模型（5 类）
+│   ├── base.py                  # 共享基类 + 评估工具
+│   ├── rf/{model,train}.py        # RF (46 维聚合特征)
+│   ├── rf7d/{model,train}.py      # RF (7 维原始计数)
+│   ├── lstm/{model,train}.py      # LSTM (46 维聚合 → 1-step seq)
+│   ├── lstm_7d/{model,train}.py   # LSTM (7 维事件序列)
+│   ├── bilstm/{model,train}.py     # BiLSTM (46 维聚合)
+│   ├── bilstm_7d/{model,train}.py  # BiLSTM (7 维事件序列)
+│   ├── attention/{model,train}.py  # Attention (46 维聚合)
+│   ├── attention_7d/{model,train}.py   # Attention (7 维事件序列)
+│   ├── meta_mamba/{model,train}.py  # Meta-Mamba (11 维事件序列 + S6 + FiLM + TC + FOMAML)
+│   └── meta_mamba_7d/{model,train}.py # Meta-Mamba (7 维事件序列)
+├── results/{rf,rf7,lstm,bilstm,attention,meta_mamba,
+│          lstm_7d,bilstm_7d,attention_7d,meta_mamba_7d}/   # 10 个模型结果
 ├── analysis/                    # 对比分析与可视化
-└── outputs/                     # 最终汇总报告
+│   ├── compare.py               # → comparison.csv / .md
+│   ├── visualize.py             # → plots/*.png
+│   └── generate_paper_figures.py  # → 10 张 paper figures
+├── docs/                        # 论文与 figures
+│   ├── paper.md                 # 早期版本
+│   ├── paper_zh.md / paper_en.md # 早期中英版本
+│   ├── paper_v1_zh.md / paper_v1_en.md  # v1 增强版（含 10 张图 + 公式推导）
+│   ├── paper_v2_zh.md / paper_v2_en.md  # v2 新增 7-dim 对比 + MetaMamba-7d
+│   └── plots/paper/             # 10 张 paper figures
+└── outputs/                     # 最终输出
+    ├── comparison.csv           # 10 模型横向对比
+    ├── comparison.md            # Markdown 报告
+    └── plots/*.                    # 5 张对比图
 ```
+
+## 模型分组（按输入特征）
+
+| 特征维度 | 模型 | 描述 |
+|---|---|---|
+| **7 维原始** | `rf7d` | sklearn RF + 7 维事件计数 |
+| **7 维原始** | `lstm_7d` | LSTM + 7 维事件序列 (one-hot) |
+| **7 维原始** | `bilstm_7d` | BiLSTM + 7 维事件序列 |
+| **7 维原始** | `attention_7d` | Transformer + 7 维事件序列 |
+| **7 维原始** | `meta_mamba_7d` | Meta-Mamba + 7 维事件序列 (S6+FiLM+TC+FOMAML) |
+| **46 维聚合** | `rf` | sklearn RF + 46 维手工特征 |
+| **46 维聚合** | `lstm` | LSTM + 46 维聚合 → 1-step seq |
+| **46 维聚合** | `bilstm` | BiLSTM + 46 维聚合 |
+| **46 维聚合** | `attention` | Transformer + 46 维聚合 |
+| **11 维时序** | `meta_mamba` | Meta-Mamba + 11 维事件序列 (one-hot + 4 连续特征) |
+
+## 主结果（5-fold × 3 seeds OOF, threshold=0.5）
+
+| 模型 | 输入维度 | n_params | F1(FAIL) | ROC-AUC |
+|---|---|---|---|---|
+| Random Forest | 46 维聚合 | N/A | 0.8795 | 0.9162 |
+| RF-7d | **7 维计数** | N/A | 0.8911 | 0.9178 |
+| LSTM | 46 维聚合 | 36,353 | 0.8805 | 0.9272 |
+| BiLSTM | 46 维聚合 | 69,697 | 0.8797 | 0.9293 |
+| Attention | 46 维聚合 | 70,209 | 0.8840 | 0.9293 |
+| **Meta-Mamba** | **11 维序列** | **22,065** | **0.9144** | **0.9290** |
+| LSTM-7d | **7 维序列** | 33,857 | 0.7985 | 0.6302 |
+| BiLSTM-7d | **7 维序列** | 67,201 | 0.8086 | 0.7080 |
+| Attention-7d | **7 维序列** | 67,713 | 0.7995 | 0.7011 |
+| **MetaMamba-7d** | **7 维序列** | **21,809** | **0.9111** | **0.9195** |
+
+**核心发现**：
+- **MetaMamba-7d（仅7 维序列）F1=0.9111**，已超过 RF-7d（0.8911）、LSTM/BiLSTM/Attention（46 维聚合）的所有结果
+- **7 维事件序列 + MetaMamba 架构 ≈ 11 维 MetaMamba**（差 -0.33% F1）
+- **7 维事件序列 + 简单 LSTM/BiLSTM/Attention** 表现很差（macro_F1 ~0.5）—— 时序信息必须有合适的架构（Selective SSM + FiLM + TC）才能发挥价值
 
 ## 快速开始
 
 ### 跑单个模型
 ```bash
 cd ~/StudentRisk
-python -m models.rf.train                        # 训练 RF
-python -m models.lstm.train --epochs 50 --seeds 42 123  # 训练 LSTM（自定义）
-python -m models.bilstm.train
-python -m models.attention.train
+python -m models.rf7.train                       # RF-7d
+python -m models.lstm_7d.train                    # LSTM-7d
+python -m models.bilstm_7d.train                  # BiLSTM-7d
+python -m models.attention_7d.train               # Attention-7d
+python -m models.meta_mamba_7d.train              # MetaMamba-7d
+
+python -m models.rf.train                         # RF (46 维)
+python -m models.lstm.train                       # LSTM (46 维)
+python -m models.bilstm.train                     # BiLSTM (46 维)
+python -m models.attention.train                  # Attention (46 维)
+python -m models.meta_mamba.train                 # MetaMamba (11 维)
 ```
 
 ### 跑全部模型（统一入口）
 ```bash
-python main.py --model all                # 跑全部 4 个模型
-python main.py --model rf lstm            # 跑指定模型
-python main.py --model all --seeds 42     # 全部使用 seed 42
+python main.py --model all               # 跑全部 10 个模型
+python main.py --model rf7d rf_7d lstm_7d attention_7d meta_mamba_7d   # 仅 7 维
+python main.py --model rf lstm bilstm attention meta_mamba            # 原始 6 个
+python main.py --model meta_mamba_7d     # 单跑 MetaMamba-7d
 ```
 
 ### 查看对比 + 可视化
 ```bash
 python -m analysis.compare     # 汇总各模型结果 → outputs/comparison.{csv,md}
 python -m analysis.visualize   # 生成混淆矩阵 / ROC / PR / 对比柱状图
+python -m analysis.generate_paper_figures   # 生成 10 张 paper figures
 ```
 
 ## 输出内容
@@ -58,21 +135,30 @@ python -m analysis.visualize   # 生成混淆矩阵 / ROC / PR / 对比柱状图
 - `oof_probs.npy`：5-fold × 3 seeds OOF 概率 (473,)
 - `labels.npy`：标签（failed=1 约定）
 - `fold_idx.npy`：每样本所属 fold
-- `plots/confusion_matrix.png`、`roc_curve.png`、`pr_curve.png`
+- `config_used.json`：超参数快照
 
 `outputs/` 汇总：
-- `comparison.csv`：4 模型 × 多个指标（per-class P/R/F1 + AUC + Macro-F1）
+- `comparison.csv`：**10 模型** × 多个指标（per-class P/R/F1 + AUC + Macro-F1）
 - `comparison.md`：Markdown 报告
-- `plots/metric_comparison.png`、`roc_curves_all.png`、`pr_curves_all.png`
+- `plots/*.png`：5 张对比图（含 7-dim 与 46-dim 分组）
 
-## 模型说明
+`docs/` 论文：
+- `paper_v2_zh.md` / `paper_v2_en.md`：v2 增强版（含 7-dim 对比 + 10 张 figures + 详细公式推导）
+- `paper_v1_zh.md` / `paper_v1_en.md`：v1 版本（基于 11-dim MetaMamba）
+- `plots/paper/*.png`：10 张 paper figures
 
-| 模型 | 类别 | 描述 | 复杂度 |
-|---|---|---|---|
-| RF | 树模型 | sklearn RandomForest, 46-dim 直接输入 | 中 |
-| LSTM | 序列 | 46-dim → MLP(seq_len=1) → 单向 LSTM | 中 |
-| BiLSTM | 序列 | 46-dim → MLP → 双向 LSTM | 中 |
-| ATTENTION | 序列 | 46-dim → 投影 → 多头自注意力 (Transformer Encoder) | 中 |
+## 评估指标（每类 + 总体）
+
+**每类（Failed=1 / Passed=0）**：
+- Precision, Recall, F1, Support
+
+**总体**：
+- Accuracy, Macro-F1, Weighted-F1
+- ROC-AUC, PR-AUC
+- 混淆矩阵 (TN/FP/FN/TP)
+
+**稳定性**：
+- per-fold std（跨 15 folds = 5×3）
 
 ## 依赖
 ```
@@ -83,3 +169,19 @@ torch>=2.0
 matplotlib>=3.5
 pyyaml>=6.0
 ```
+
+## 引用
+
+```bibtex
+@misc{wang2026metamamba,
+  title={Meta-Mamba for Early Academic Risk Prediction in Programming Learners:
+         Selective State Space, Task-Aware Modulation, and Few-Shot Meta-Learning},
+  author={Wang, Jian},
+  year={2026},
+  url={https://github.com/wangjian98/StudentRisk},
+}
+```
+
+## 仓库
+
+https://github.com/wangjian98/StudentRisk
