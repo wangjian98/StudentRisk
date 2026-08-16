@@ -18,6 +18,11 @@ import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
+
+# 中文字体设置（必须在 pyplot 之前）
+from analysis.setup_fonts import setup_chinese_font
+setup_chinese_font()
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 from sklearn.metrics import precision_recall_curve, average_precision_score
