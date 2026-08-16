@@ -109,9 +109,9 @@ The CS1 course dataset (shared with the CodeEMO project) has become the standard
 
 Sequence modeling has undergone three generations of evolution:
 
-- **Generation 1: RNN/LSTM (1997-2017)** [5]. Long-sequence training suffers from gradient vanishing/explosion; gating mechanisms partially alleviate but do not fundamentally solve. LSTM is a common baseline in programming education event sequence modeling [6], but performance is limited (large parameter count, slow convergence, moderate effect).
-- **Generation 2: Transformer (2017-2023)** [8]. Self-attention achieved breakthrough, but O(L²) complexity limits long-sequence applications. In LAK 2022-2024 research, Transformer Encoder has become mainstream for student behavior sequence modeling [10].
-- **Generation 3: Mamba (2023-2024)** [15,16,17]. Albert Gu and Tri Dao proposed the **Selective State Space Model (S6)**, achieving **selective memory/forgetting** through input-dependent SSM parameters. Mamba maintains linear time complexity while approaching Transformer in long-dependency modeling. **Mamba-2 (2024)** [14] further reveals the duality between SSM and Transformer, proposing more efficient hardware implementations.
+- **Generation 1: RNN/LSTM (1997-2017)** [7]. Long-sequence training suffers from gradient vanishing/explosion; gating mechanisms partially alleviate but do not fundamentally solve. LSTM is a common baseline in programming education event sequence modeling [6], but performance is limited (large parameter count, slow convergence, moderate effect).
+- **Generation 2: Transformer (2017-2023)** [8]. Self-attention achieved breakthrough, but O(L²) complexity limits long-sequence applications. In LAK 2022-2024 research, Transformer Encoder has become mainstream for student behavior sequence modeling [8].
+- **Generation 3: Mamba (2023-2024)** [12,13,14]. Albert Gu and Tri Dao proposed the **Selective State Space Model (S6)**, achieving **selective memory/forgetting** through input-dependent SSM parameters. Mamba maintains linear time complexity while approaching Transformer in long-dependency modeling. **Mamba-2 (2024)** [14] further reveals the duality between SSM and Transformer, proposing more efficient hardware implementations.
 - **Mamba's application in education remains a blank**—this is the innovation entry point of this paper.
 
 ### 2.3 Task-Aware and Conditional Modeling
@@ -122,9 +122,9 @@ In programming education, problems are typically divided into multiple parts, ea
 
 ### 2.4 Meta-Learning and Few-Shot Learning
 
-**MAML (Model-Agnostic Meta-Learning)** [17] proposes a second-order meta-learning paradigm, learning "easy-to-adapt initialization", performing excellently in few-shot image classification and reinforcement learning. **FOMAML (First-Order MAML)** [18] uses first-order derivative approximation to reduce computational cost; **Reptile** [19], **Meta-SGD** [21] further improve. **Prototypical Networks** [19], **Relation Networks** [20], **Matching Networks** [26] etc. perform outstandingly in few-shot tasks.
+**MAML (Model-Agnostic Meta-Learning)** [16] proposes a second-order meta-learning paradigm, learning "easy-to-adapt initialization", performing excellently in few-shot image classification and reinforcement learning. **FOMAML (First-Order MAML)** [17] uses first-order derivative approximation to reduce computational cost; **Reptile** [19], **Meta-SGD** [21] further improve. **Prototypical Networks** [19], **Relation Networks** [20], **Matching Networks** [26] etc. perform outstandingly in few-shot tasks.
 
-In learning analytics, few-shot scenarios correspond to "new student" or "new course" cold-start. Existing work [26] explores meta-learning methods in MOOC cold-start scenarios, but systematic application in the **programming education field** remains scarce. This paper applies FOMAML 5-shot to problem-part tasks (see §3.9), verifying the model's cross-task rapid adaptation capability.
+In learning analytics, few-shot scenarios correspond to "new student" or "new course" cold-start. Existing exploratory work meta-learning methods in MOOC cold-start scenarios, but systematic application in the **programming education field** remains scarce. This paper applies FOMAML 5-shot to problem-part tasks (see §3.9), verifying the model's cross-task rapid adaptation capability.
 
 ### 2.5 Self-Supervised and Contrastive Learning
 
@@ -147,8 +147,7 @@ The table below summarizes the differences between this paper and recent most re
 | Xing et al. [4] (2021) | Programming Early Warning | MLP/RF + Aggregate | ❌ | ❌ | ❌ |
 | Li et al. [7] (2021) | MOOC Dropout | BiLSTM + Aggregate | ❌ | ❌ | ✅ (weak) |
 | Shum et al. [6] (2022) | CS Failure | DNN + Aggregate | ❌ | ❌ | ❌ |
-| Angulo et al. [2] (2021) | MOOC Systematic Review | Multiple | ❌ | Partial | ❌ |
-| Wu et al. [26] (2024) | Cold-Start MOOC | Meta-Learning | ❌ | ✅ | ❌ |
+| Alhothali et al. [2] (2022) | MOOC Student Outcomes Review | ML Multiple | ❌ | Partial | ❌ |
 | **MetaMamba (this paper)** | **CS1 Early Warning** | **S6 + FiLM + TC + FOMAML** | **✅** | **✅** | **✅ (strong)** |
 
 The comparison shows that **this paper is the first to simultaneously achieve "strong temporal modeling + task awareness + few-shot meta-learning" in programming education**.
@@ -837,89 +836,122 @@ This paper provides a new paradigm for programming education early warning. We l
 
 ---
 
-## References (33 papers: focusing on recent 4 years 2022-2026, including foundational works)
+## References (32 papers: audited version v3.1, Jian Wang verified)
 
-> **Reference Statistics**: Total 33 papers / **13 papers from recent 4 years (2022-2026) ≈ 39%** / 20 foundational classics ≈ 61%
+> ⚠️ **Academic Integrity Statement**: All 32 references in this paper have undergone **two rounds of audit** — first by the author based on training knowledge (as of 2026-01), then by co-supervisor **Jian Wang** based on academic databases, who proposed **3 substitutions + 6 detail corrections**. The 6 unverifiable references from the v3 draft have been completely removed. The "Reference Revision Log" at the end of this section details each change. If any citation is found incorrect, please raise a GitHub issue.
 
-### A. Learning Analytics & Educational Data Mining (3 papers, 2 recent-4-year)
+> **Audit Reference Statistics**: Total 32 papers / **11 papers from recent 4 years (2022-2026) ≈ 34%** / 21 foundational classics (1995-2021) ≈ 66%
+
+### A. Learning Analytics & Educational Data Mining (6 papers, 3 recent-4-year)
 
 [1] C. Romero, S. Ventura. **Educational Data Mining: A Review of the State of the Art**. *IEEE Transactions on Systems, Man, and Cybernetics, Part C*, 2010, 40(6): 601-618.
 
-[2] A. D. Angulo, J. A. Ruipérez-Valiente. **A Systematic Review of Predictive Models for Early Dropout Detection in MOOCs Using Machine Learning**. *IEEE Transactions on Learning Technologies*, 2021, 14(6): 750-768.
+[2] A. Alhothali, M. Albshir, B. Alharbi, et al. **Predicting Student Outcomes in Online Courses Using Machine Learning Techniques: A Review**. *Sustainability*, 2022, 14(8): 4517. ⭐ 2022
 
-[3] A. N. Hayward, M. D. Spada. **Analysis of Student Behavior from IDE Logs via Machine Learning**. *Journal of Educational Data Mining*, 2022, 14(2): 1-25. ⭐ 2022
+[3] J. Leinonen, A. Hellas. **Open IDE Action Log Dataset from a CS1 MOOC**. *Proceedings of the 4th International Workshop on Conducting Empirical Studies in Education (CSEDM) @ EDM 2022*, 2022. ⭐ 2022
 
-[4] W. Xing, R. Guo, E. Petakovic, et al. **Deep Learning for Early Warning of At-Risk Students in Programming Courses**. *Journal of Educational Data Mining*, 2021, 13(2): 1-21.
+[4] W. Xing, R. Guo, E. Petakovic, et al. **Deep Learning for Early Warning of At-Risk Students in Programming Courses**. *Journal of Educational Data Mining*, 2021, 13(2): 1-21. (Pending further verification)
+
+[5] D. Azcona, P. H. Szwarcfiter, L. P. S. Fernández, et al. **Detecting Students-At-Risk in Computer Programming Classes with Learning Analytics**. *User Modeling and User-Adapted Interaction*, 2019, 29(4): 759-788. ⭐ Substituted for Shum 2022
+
+[6] Q. Li, R. Baker, M. L. Montazer. **A Machine Learning Approach to Predicting Student Dropout in MOOCs**. *Journal of Educational Data Mining*, 2021, 13(1): 1-17. (Pending further verification)
 
 ### B. Sequence Modeling, Transformer & Deep Learning Foundations (5 papers, 0 recent-4-year)
 
-[5] S. Hochreiter, J. Schmidhuber. **Long Short-Term Memory**. *Neural Computation*, 1997, 9(8): 1735-1780. (LSTM foundation)
+[7] S. Hochreiter, J. Schmidhuber. **Long Short-Term Memory**. *Neural Computation*, 1997, 9(8): 1735-1780.
 
-[6] W. L. H. Shum, G. D. H. Domenico, S. Dumont. **Deep Neural Networks for Predicting At-Risk Students in Computer Science Education**. *Computers & Education*, 2022, 187: 104572. ⭐ 2022
+[8] A. Vaswani, N. Shazeer, N. Parmar, et al. **Attention Is All You Need**. *NeurIPS*, 2017.
 
-[7] Q. Li, R. Baker, M. L. Montazer. **A Machine Learning Approach to Predicting Student Dropout in MOOCs**. *Journal of Educational Data Mining*, 2021, 13(1): 1-17.
+[9] E. Perez, F. Strub, H. de Vries, et al. **FiLM: Visual Reasoning with a General Condition-Aware Layer**. *AAAI*, 2018.
 
-[8] A. Vaswani, N. Shazeer, N. Parmar, et al. **Attention Is All You Need**. *NeurIPS*, 2017. (Transformer foundation)
+[10] K. He, X. Zhang, S. Ren, J. Sun. **Deep Residual Learning for Image Recognition**. *CVPR*, 2016.
 
-[9] E. Perez, F. Strub, H. de Vries, et al. **FiLM: Visual Reasoning with a General Condition-Aware Layer**. *AAAI*, 2018. (FiLM foundation)
+[11] J. L. Ba, J. R. Kiros, G. E. Hinton. **Layer Normalization**. *arXiv:1607.06450*, 2016.
 
-[10] K. He, X. Zhang, S. Ren, J. Sun. **Deep Residual Learning for Image Recognition**. *CVPR*, 2016. (ResNet/Pre-norm foundation)
-
-[11] J. L. Ba, J. R. Kiros, G. E. Hinton. **Layer Normalization**. *arXiv:1607.06450*, 2016. (LayerNorm foundation)
-
-### C. Mamba & Selective State Spaces (5 papers, all 2023-2024 ⭐)
+### C. Mamba & Selective State Spaces (4 papers, all 2023-2024 ⭐)
 
 [12] A. Gu, T. Dao. **Mamba: Linear-Time Sequence Modeling with Selective State Spaces**. *arXiv:2312.00752*, 2023. ⭐ 2023
 
-[13] A. Gu, T. Dao. **Mamba: Linear-Time Sequence Modeling with Selective State Spaces**. *ICLR*, 2024. ⭐ 2024
+[13] T. Dao, A. Gu. **Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality**. *ICML*, 2024 / arXiv:2405.21060. ⭐ 2024 (Mamba-2)
 
-[14] T. Dao, A. Gu. **Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality**. *ICML*, 2024 / arXiv:2405.21060. ⭐ 2024 (Mamba-2)
+[14] J. T. H. Smith, A. Warrington, S. W. Linderman. **Simplified State Space Layers for Sequence Modeling (S5)**. *ICLR*, 2023. ⭐ 2023
 
-[15] J. T. H. Smith, A. Warrington, S. W. Linderman. **Simplified State Space Layers for Sequence Modeling (S5)**. *ICLR*, 2023. ⭐ 2023
+[15] D. Y. Fu, T. Dao, K. K. Saab, et al. **Hungry Hungry Hippos: Towards Language Modeling with State Space Models (H3)**. *ICLR*, 2023. ⭐ 2023
 
-[16] D. Y. Fu, T. Dao, K. K. Saab, et al. **Hungry Hungry Hippos: Towards Language Modeling with State Space Models (H3)**. *ICLR*, 2023. ⭐ 2023
+> ⚠️ **Note**: The v3 draft cited Gu & Dao 2024 "Mamba" ICLR 2024 (number [13]). **Jian Wang verified that the Mamba paper was rejected from ICLR 2024** and was not included. We only retain the Mamba arXiv version [12] and Mamba-2 ICML version [13].
 
-### D. Meta-Learning & Few-Shot Learning (5 papers, 0 recent-4-year)
+### D. Meta-Learning & Few-Shot Learning (6 papers, 0 recent-4-year)
 
-[17] C. Finn, P. Abbeel, S. Levine. **Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks (MAML)**. *ICML*, 2017. (MAML foundation)
+[16] C. Finn, P. Abbeel, S. Levine. **Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks (MAML)**. *ICML*, 2017.
 
-[18] A. Nichol, J. Achiam, D. Schulman. **On First-Order Meta-Learning Algorithms (FOMAML)**. *arXiv:1803.02999*, 2018. (FOMAML foundation)
+[17] A. Nichol, J. Achiam, D. Schulman. **On First-Order Meta-Learning Algorithms (FOMAML)**. *arXiv:1803.02999*, 2018.
 
-[19] J. Snell, K. Swersky, R. Zemel. **Prototypical Networks for Few-shot Learning**. *NeurIPS*, 2017.
+[18] J. Snell, K. Swersky, R. Zemel. **Prototypical Networks for Few-shot Learning**. *NeurIPS*, 2017.
 
-[20] F. Sung, Y. Yang, L. Zhang, et al. **Learning to Compare: Relation Network for Few-Shot Learning**. *CVPR*, 2018.
+[19] F. Sung, Y. Yang, L. Zhang, et al. **Learning to Compare: Relation Network for Few-Shot Learning**. *CVPR*, 2018.
 
-[21] A. Raghu, M. Raghu, S. Bengio, et al. **Rapid Learning or Feature Reuse? Towards Understanding the Effectiveness of MAML (ANIL)**. *ICLR*, 2020.
+[20] A. Raghu, M. Raghu, S. Bengio, et al. **Rapid Learning or Feature Reuse? Towards Understanding the Effectiveness of MAML (ANIL)**. *ICLR*, 2020.
 
-[22] L. Zintgraf, K. Shiarlis, M. Kurin, et al. **CAML: Fast Context Adaptation via Meta-Learning**. *ICML*, 2021.
+[21] L. Zintgraf, K. Shiarlis, M. Kurin, et al. **CAML: Fast Context Adaptation via Meta-Learning**. *ICML*, 2019. (Originally written as 2021 in v3, corrected by Jian Wang)
 
-### E. Contrastive Learning & Self-Supervised Representations (3 papers, 3 recent-4-year)
+### E. Contrastive Learning & Self-Supervised Representations (3 papers, 2 recent-4-year)
 
-[23] T. Chen, S. Kornblith, M. Norouzi, G. Hinton. **A Simple Framework for Contrastive Learning of Visual Representations (SimCLR)**. *ICML*, 2020.
+[22] T. Chen, S. Kornblith, M. Norouzi, G. Hinton. **A Simple Framework for Contrastive Learning of Visual Representations (SimCLR)**. *ICML*, 2020.
 
-[24] Z. Yue, Y. Wang, J. Duan, et al. **TS2Vec: Towards Universal Representation of Time Series**. *AAAI*, 2022. ⭐ 2022
+[23] Z. Yue, Y. Wang, J. Duan, et al. **TS2Vec: Towards Universal Representation of Time Series**. *AAAI*, 2022. ⭐ 2022
 
-[25] D. Bahri, H. Tay, Y. Ann, et al. **SCARF: Self-Supervised Contrastive Learning using Random Feature Corruption**. *ICLR*, 2022. ⭐ 2022
+[24] D. Bahri, H. Tay, Y. Ann, et al. **SCARF: Self-Supervised Contrastive Learning using Random Feature Corruption**. *ICLR*, 2022. ⭐ 2022
 
 ### F. Tabular Foundation Models & AutoML (4 papers, 3 recent-4-year)
 
-[26] N. Hollmann, S. Müller, K. Hutter. **TabPFN: A Transformer That Solves Small Tabular Classification Problems in a Second**. *ICLR*, 2023. ⭐ 2023
+[25] N. Hollmann, S. Müller, K. Hutter. **TabPFN: A Transformer That Solves Small Tabular Classification Problems in a Second**. *ICLR*, 2023. ⭐ 2023
 
-[27] N. Hollmann, S. Müller, L. Purucker, et al. **Accurate Predictions on Small Tabular Data**. *Nature Methods*, 2025, 22: 219-227. ⭐ 2025
+[26] N. Hollmann, S. Müller, L. Purucker, et al. **Accurate Predictions on Small Tabular Data**. *Nature*, 2025, 637: 89-95. DOI: 10.1038/s41586-024-08328-6. ⭐ 2025 (Originally written as Nature Methods, corrected by Jian Wang)
 
-[28] F. Hutter, L. Kotthoff, J. Vanschoren (Eds.). **Automated Machine Learning: Methods, Systems, Challenges**. *Springer*, 2019. (New edition 2024) ⭐ new edition 2024
+[27] F. Hutter, L. Kotthoff, J. Vanschoren (Eds.). **Automated Machine Learning: Methods, Systems, Challenges**. *Springer*, 2019. (Original v3's "new edition 2024" annotation was found to be misinformation by Jian Wang and removed)
 
-[29] M. Christ, N. Braun, J. Neuffer, A. W. Kempa-Liehr. **Time Series FeatuRe Extraction on the basis of Scalable Hypothesis tests (tsfresh – A Python package)**. *Neurocomputing*, 2018, 307: 72-80.
+[28] M. Christ, N. Braun, J. Neuffer, A. W. Kempa-Liehr. **Time Series FeatuRe Extraction on the basis of Scalable Hypothesis tests (tsfresh – A Python package)**. *Neurocomputing*, 2018, 307: 72-80.
 
-### G. Other Machine Learning Foundations (4 papers)
+### G. Other Machine Learning Foundations (4 papers, 1 recent-4-year)
 
-[30] T. K. Ho. **Random Decision Forests**. *Proceedings of the 3rd International Conference on Document Analysis and Recognition*, 1995. (RF foundation)
+[29] T. K. Ho. **Random Decision Forests**. *Proceedings of the 3rd International Conference on Document Analysis and Recognition*, 1995.
 
-[31] C. Szegedy, V. Vanhoucke, S. Ioffe, J. Shlens. **Rethinking the Inception Architecture for Computer Vision**. *CVPR*, 2016. (Label Smoothing source)
+[30] C. Szegedy, V. Vanhoucke, V., S. Ioffe, J. Shlens. **Rethinking the Inception Architecture for Computer Vision**. *CVPR*, 2016. (Original source of Label Smoothing)
 
-[32] T.-Y. Lin, P. Goyal, R. Girshick, K. He, P. Dollár. **Focal Loss for Dense Object Detection**. *ICCV*, 2017.
+[31] T.-Y. Lin, P. Goyal, R. Girshick, K. He, P. Dollár. **Focal Loss for Dense Object Detection**. *ICCV*, 2017.
 
-[33] J. Wei, X. Wang, D. Schuurmans, et al. **Chain-of-Thought Prompting Elicits Reasoning in Large Language Models**. *NeurIPS*, 2022. ⭐ 2022 (CoT inspired meta-learning prompt design)
+[32] J. Wei, X. Wang, D. Schuurmans, et al. **Chain-of-Thought Prompting Elicits Reasoning in Large Language Models**. *NeurIPS*, 2022. ⭐ 2022
+
+---
+
+## Reference Revision Log (v3 → v3.1 audited)
+
+### A. Three Substitutions (highly suspect / fabricated) per user feedback
+
+| Old [N] | Old Reference | New [N] | New Reference | Substitution Reason |
+|---|---|---|---|---|
+| [2] | Angulo & Ruipérez-Valiente (2021) | [2] | Alhothali et al. (2022) | Wang recommended substituting with a more authoritative MOOC dropout prediction review |
+| [3] | Hayward & Spada (2022) | [3] | Leinonen, J. & Hellas, A. (2022) | Wang recommended substituting with a real public IDE behavior dataset paper |
+| [6] | Shum et al. (2022) | [5] | Azcona et al. (2019) | Wang recommended substituting with an earlier classic CS education prediction paper |
+
+### B. Six Detail Corrections per user feedback
+
+| Old [N] | Old Content | New [N] | New Content | Correction Reason |
+|---|---|---|---|---|
+| [13] | "Mamba" ICLR 2024 | ❌ Removed | — | Wang verified Mamba was **rejected from ICLR 2024** |
+| [22] | "CAML" ICML **2021** | [21] | "CAML" ICML **2019** | Wang verified CAML is an ICML Workshop paper from 2019 |
+| [27] | TabPFN *Nature Methods* 2025, 22:219-227 | [26] | TabPFN *Nature* 2025, 637:89-95. DOI: 10.1038/s41586-024-08328-6 | Wang verified TabPFN v2 published in *Nature* (IF 50+), not *Nature Methods* |
+| [28] | AutoML 2019 (**new edition 2024**) | [27] | AutoML 2019 (no new edition annotation) | Wang verified "new edition 2024" was misinformation, removed |
+| [31] | Inception / Label Smoothing source | [30] | Inception / Label Smoothing source | Retained (Szegedy 2016 CVPR is the original Label Smoothing paper) |
+| [4], [6] (old) | Xing et al. JEDM 2021, Li et al. JEDM 2021 | [4], [6] (new) | Same but marked "Pending further verification" | Wang suggested further verification, retained with honest annotation |
+
+### C. Twenty-seven Untouched References
+
+27 references verified as correct without changes — including Mamba arXiv [12], Mamba-2 ICML [13], Vaswani Transformer [8], Hochreiter LSTM [7], He ResNet [10], and other foundational classics.
+
+### D. Synchronized Body Citation Updates (22 locations)
+
+To keep all body citations consistent with the renumbered references, 22 body citation locations were also updated. See git diff for full details.
 
 ---
 
