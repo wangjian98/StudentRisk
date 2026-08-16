@@ -2,6 +2,12 @@
 
 基于学生 IDE 编程日志预测课程是否通过 / 挂科（Early Dropout/Failure Prediction）。
 
+![Version](https://img.shields.io/badge/version-v3.1-blue) ![Status](https://img.shields.io/badge/status-audited-success) ![Papers](https://img.shields.io/badge/papers-32%20references-orange) ![License](https://img.shields.io/badge/license-Academic-lightgrey)
+
+> 🎉 **v3.1 已发布**（2026-08-17）：经合作导师王健两轮审计（3 篇替换 + 6 处细节修正 + 22 处正文引用同步），参考文献从 39 篇降至 **32 篇真实可信文献**，编号连续 [1]-[32]。详见 [v3.1 Release Notes](https://github.com/wangjian98/StudentRisk/releases/tag/v3.1) 和 [审计修订记录](docs/refs_audit_report.md)。
+
+
+
 ## 数据集
 - **来源**：CS1 公开课程日志（与 CodeEMO 项目共享）
 - **样本**：473 名学生（其中 failed=314 / passed=159，不平衡比 ≈ 2:1）
@@ -222,3 +228,15 @@ pyyaml>=6.0
 ## 仓库
 
 https://github.com/wangjian98/StudentRisk
+---
+
+## 📌 版本历史
+
+| 版本 | 日期 | 关键变更 |
+|---|---|---|
+| **v3.1** ⭐ 当前 | 2026-08-17 | **审计版**：王健复核后 3 篇替换（Angulo→Alhothali、Hayward→Leinonen、Shum→Azcona）+ 6 处细节修正（Mamba ICLR 删除、CAML 改 2019、TabPFN 改 Nature+DOI、AutoML 删"新世纪版 2024"等）+ 22 处正文引用同步。32 篇真实文献，编号连续 [1]-[32]。 |
+| v3.0 | 2026-08-16 | v3 完整论文版：970 行中文 / 983 行英文 + 13 张图 |
+| v2.0 | 2026-08-15 | 10 模型对比版（5-fold × 3 seeds OOF）|
+| v1.0 | 2026-08-15 | 初版：Meta-Mamba + 5 baselines |
+
+完整引用审计记录：[docs/refs_audit_report.md](docs/refs_audit_report.md)
