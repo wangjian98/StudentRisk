@@ -9,7 +9,7 @@ Outputs in outputs/plots/paper/:
   - fig6_per_fold_stability.png    — Per-fold macro-F1 stability
   - fig7_per_class_pr_curves.png   — Per-class PR curves
   - fig8_fomaml_per_task.png       — FOMAML per-task results
-  - fig9_rf7_feature_importance.png — RF-7d feature importance
+  - fig9_feature_importance.png   — RF-7d feature importance
   - fig10_ablation_analysis.png    — Conceptual ablation analysis
 """
 import os
@@ -31,22 +31,22 @@ RESULTS_DIR = os.path.join(_ROOT, 'results')
 OUT_DIR = os.path.join(_ROOT, 'outputs', 'plots', 'paper')
 os.makedirs(OUT_DIR, exist_ok=True)
 
-MODEL_ORDER = ['rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba']
+MODEL_ORDER = ['rf7', 'meta_mamba', 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
 MODEL_NAMES = {
-    'rf':         'Random Forest',
-    'rf7':        'RF-7d',
-    'lstm':       'LSTM',
-    'bilstm':     'BiLSTM',
-    'attention':  'Attention',
-    'meta_mamba': 'Meta-Mamba',
+    'rf7':           'RF-7d',
+    'meta_mamba':    'Meta-Mamba',
+    'lstm_7d':       'LSTM-7d',
+    'bilstm_7d':     'BiLSTM-7d',
+    'attention_7d':  'Attention-7d',
+    'meta_mamba_7d': 'Meta-Mamba-7d',
 }
 COLORS = {
-    'rf':         '#1f77b4',
-    'rf7':        '#17becf',
-    'lstm':       '#ff7f0e',
-    'bilstm':     '#2ca02c',
-    'attention':  '#d62728',
-    'meta_mamba': '#9467bd',
+    'rf7':           '#17becf',
+    'meta_mamba':    '#9467bd',
+    'lstm_7d':       '#ff7f0e',
+    'bilstm_7d':     '#2ca02c',
+    'attention_7d':  '#d62728',
+    'meta_mamba_7d': '#8c564b',
 }
 
 
@@ -519,14 +519,14 @@ def fig9_feature_importance():
 # ─────────────────────────────────────────────────────────────────────────
 def fig10_ablation_analysis():
     """Conceptual ablation: estimated F1 contribution of each component."""
-    components = ['v2\ndual-MLP\n(46d agg.)',
-                  '+ wider\nhidden',
-                  '+ Label\nSmoothing',
-                  'D3\n(LS+h48)',
+    components = ['RF-7d\n(baseline)',
+                  'LSTM-7d\n(7-dim seq)',
+                  'BiLSTM-7d\n(7-dim seq)',
+                  'Attention-7d\n(7-dim seq)',
                   '+ event\nsequence\n(Mamba)',
                   '+ FiLM\n+ task\ncontrastive',
                   'Meta-Mamba\n(Full)']
-    estimated_f1 = [0.750, 0.760, 0.765, 0.768, 0.890, 0.905, 0.914]
+    estimated_f1 = [0.891, 0.799, 0.809, 0.800, 0.890, 0.905, 0.914]
     colors_bar = ['#bbbbbb', '#a9dfbf', '#a9dfbf', '#82e0aa',
                   '#f7dc6f', '#f5b7b1', '#9467bd']
 

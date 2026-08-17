@@ -2,7 +2,7 @@
 
 Run all models with a single command:
     python main.py --model all
-    python main.py --model rf lstm bilstm attention
+    python main.py --model rf7 meta_mamba meta_mamba_7d
     python main.py --model all --seeds 42
     python main.py --model all --threshold 0.5 --n-splits 5
 
@@ -22,11 +22,7 @@ if _ROOT not in sys.path:
 
 
 MODEL_RUNNERS = {
-    'rf':            ('models.rf.train', 'run'),
     'rf7':           ('models.rf7.train', 'run'),
-    'lstm':          ('models.lstm.train', 'run'),
-    'bilstm':        ('models.bilstm.train', 'run'),
-    'attention':     ('models.attention.train', 'run'),
     'meta_mamba':    ('models.meta_mamba.train', 'run'),
     'lstm_7d':       ('models.lstm_7d.train', 'run'),
     'bilstm_7d':     ('models.bilstm_7d.train', 'run'),
@@ -78,9 +74,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument('--model', nargs='+', default=['all'],
-                        choices=['all', 'rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba',
+                        choices=['all', 'rf7', 'meta_mamba',
                                  'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d'],
-                        help='Model(s) to run. Use "all" for all 4 models.')
+                        help='Model(s) to run. Use "all" for all 6 models.')
     parser.add_argument('--seeds', nargs='+', type=int, default=None,
                         help='Random seeds for CV (default from configs/default.yaml)')
     parser.add_argument('--n-splits', type=int, default=None,
@@ -102,14 +98,11 @@ def main():
         run_viz()
         return
 
-    # Determine which models to run
     if 'all' in args.model:
-        names = ['rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba',
-                 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
+        names = ['rf7', 'meta_mamba', 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
     else:
         names = [m for m in args.model if m != 'all']
 
-    # Load default config for seeds/n_splits if not provided
     import yaml
     cfg_path = os.path.join(_ROOT, 'configs', 'default.yaml')
     with open(cfg_path) as f:
@@ -125,9 +118,8 @@ def main():
 
     run_models(names, seeds, n_splits, args.threshold, save_oof=not args.no_oof)
 
-    # If all 4 ran successfully, automatically build comparison + viz
-    if len(names) == 4:
-        print(f"\n[main] All 4 models done. Building comparison + visualizations ...", flush=True)
+    if len(names) == 6:
+        print(f"\n[main] All 6 models done. Building comparison + visualizations ...", flush=True)
         try:
             run_compare()
         except Exception as e:

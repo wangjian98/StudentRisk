@@ -7,13 +7,13 @@ cv:
   n_splits: 5
   seeds: [42, 123, 777]
 
-random_forest:
+rf7:
   n_estimators: 200
   max_depth: 10
   min_samples_split: 5
   class_weight: balanced
 
-lstm:
+lstm_7d:
   hidden_dim: 64
   num_layers: 1
   dropout: 0.3
@@ -23,7 +23,7 @@ lstm:
   batch_size: 32
   patience: 12
 
-bilstm:
+bilstm_7d:
   hidden_dim: 64
   num_layers: 1
   dropout: 0.3
@@ -33,7 +33,7 @@ bilstm:
   batch_size: 32
   patience: 12
 
-attention:
+attention_7d:
   d_model: 64
   n_heads: 4
   n_layers: 2

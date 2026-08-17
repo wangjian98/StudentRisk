@@ -7,9 +7,8 @@
 - **样本**：473 名学生（其中 failed=314 / passed=159，不平衡比 ≈ 2:1）
 - **原始事件**：28,588,310 条 IDE 事件，7 种事件类型
 - **特征维度对比**：
-  - **7 维原始**：7 种事件类型的 one-hot 序列 / 计数（无聚合）
-  - **11 维时序**：7 维 one-hot + 时间间隔 + 截止距离 + 题号 + 练习号（仅 MetaMamba）
-  - **46 维聚合**：28 事件统计 + 10 行为轨迹 + 6 情绪复合 + 2 元信息（paper-aligned 手工特征）
+  - **7 维原始事件序列**：7 种事件类型的 one-hot 序列（LSTM-7d / BiLSTM-7d / Attention-7d / Meta-Mamba-7d）+ 计数（RF-7d）
+  - **11 维时序扩展**：7 维 one-hot + 时间间隔 + 截止距离 + 题号 + 练习号（仅 Meta-Mamba）
 
 ## Label 规范（重要）
 - **Failed = 1**（挂科）
@@ -27,72 +26,60 @@ StudentRisk/
 ├── configs/default.yaml         # 默认超参数
 ├── data/                        # 数据加载与特征工程
 │   ├── __init__.py
-│   ├── data_loader.py           # 加载 IDE_logs + passed.csv, Failed=1 标签转换
-│   └── features.py              # 46 维手工特征
-├── models/                      # 10 个模型（5 类）
+│   └── data_loader.py           # 加载 IDE_logs + passed.csv, Failed=1 标签转换
+├── models/                      # 6 个模型（3 类架构）
 │   ├── base.py                  # 共享基类 + 评估工具
-│   ├── rf/{model,train}.py        # RF (46 维聚合特征)
-│   ├── rf7d/{model,train}.py      # RF (7 维原始计数)
-│   ├── lstm/{model,train}.py      # LSTM (46 维聚合 → 1-step seq)
+│   ├── rf7/{model,train}.py      # RF (7 维原始计数)
 │   ├── lstm_7d/{model,train}.py   # LSTM (7 维事件序列)
-│   ├── bilstm/{model,train}.py     # BiLSTM (46 维聚合)
 │   ├── bilstm_7d/{model,train}.py  # BiLSTM (7 维事件序列)
-│   ├── attention/{model,train}.py  # Attention (46 维聚合)
 │   ├── attention_7d/{model,train}.py   # Attention (7 维事件序列)
 │   ├── meta_mamba/{model,train}.py  # Meta-Mamba (11 维事件序列 + S6 + FiLM + TC + FOMAML)
 │   └── meta_mamba_7d/{model,train}.py # Meta-Mamba (7 维事件序列)
-├── results/{rf,rf7,lstm,bilstm,attention,meta_mamba,
-│          lstm_7d,bilstm_7d,attention_7d,meta_mamba_7d}/   # 10 个模型结果
+├── results/{rf7,meta_mamba,
+│          lstm_7d,bilstm_7d,attention_7d,meta_mamba_7d}/   # 6 个模型结果
 ├── analysis/                    # 对比分析与可视化
 │   ├── compare.py               # → comparison.csv / .md
 │   ├── visualize.py             # → plots/*.png
-│   └── generate_paper_figures.py  # → 10 张 paper figures
+│   └── generate_paper_figures.py  # → 6 张 paper figures
 ├── docs/                        # 论文与 figures
-│   ├── paper.md                 # 早期版本
-│   ├── paper_zh.md / paper_en.md # 早期中英版本
-│   ├── paper_v1_zh.md / paper_v1_en.md  # v1 增强版（含 10 张图 + 公式推导）
-│   ├── paper_v2_zh.md / paper_v2_en.md  # v2 新增 7-dim 对比 + MetaMamba-7d
-│   └── plots/paper/             # 10 张 paper figures
+│   ├── paper_v4_zh.md / paper_v4_en.md  # ⭐ v4 主版本（移除 46 维，含 6 张图）
+│   ├── paper_zh.md / paper_en.md # v3 早期版本（仍含 46 维对比）
+│   ├── paper_v2_zh.md / paper_v2_en.md  # v2 7-dim 对比版
+│   ├── paper_v1_zh.md / paper_v1_en.md  # v1 增强版
+│   └── plots/paper/             # 6 张 paper figures
 └── outputs/                     # 最终输出
-    ├── comparison.csv           # 10 模型横向对比
+    ├── comparison.csv           # 6 模型横向对比
     ├── comparison.md            # Markdown 报告
-    └── plots/*.                    # 5 张对比图
+    └── plots/*.                    # 6 张对比图
 ```
 
 ## 模型分组（按输入特征）
 
 | 特征维度 | 模型 | 描述 |
 |---|---|---|
-| **7 维原始** | `rf7d` | sklearn RF + 7 维事件计数 |
-| **7 维原始** | `lstm_7d` | LSTM + 7 维事件序列 (one-hot) |
-| **7 维原始** | `bilstm_7d` | BiLSTM + 7 维事件序列 |
-| **7 维原始** | `attention_7d` | Transformer + 7 维事件序列 |
-| **7 维原始** | `meta_mamba_7d` | Meta-Mamba + 7 维事件序列 (S6+FiLM+TC+FOMAML) |
-| **46 维聚合** | `rf` | sklearn RF + 46 维手工特征 |
-| **46 维聚合** | `lstm` | LSTM + 46 维聚合 → 1-step seq |
-| **46 维聚合** | `bilstm` | BiLSTM + 46 维聚合 |
-| **46 维聚合** | `attention` | Transformer + 46 维聚合 |
-| **11 维时序** | `meta_mamba` | Meta-Mamba + 11 维事件序列 (one-hot + 4 连续特征) |
+| **7 维原始计数** | `rf7` | sklearn RF + 7 维事件计数 |
+| **7 维事件序列** | `lstm_7d` | LSTM + 7 维事件序列 (one-hot) |
+| **7 维事件序列** | `bilstm_7d` | BiLSTM + 7 维事件序列 |
+| **7 维事件序列** | `attention_7d` | Transformer + 7 维事件序列 |
+| **7 维事件序列** | `meta_mamba_7d` | Meta-Mamba + 7 维事件序列 (S6+FiLM+TC+FOMAML) |
+| **11 维时序扩展** | `meta_mamba` | Meta-Mamba + 11 维事件序列 (one-hot + 时间间隔 + 截止距离 + 题号 + 练习号) |
 
 ## 主结果（5-fold × 3 seeds OOF, threshold=0.5）
 
 | 模型 | 输入维度 | n_params | F1(FAIL) | ROC-AUC |
 |---|---|---|---|---|
-| Random Forest | 46 维聚合 | N/A | 0.8795 | 0.9162 |
-| RF-7d | **7 维计数** | N/A | 0.8911 | 0.9178 |
-| LSTM | 46 维聚合 | 36,353 | 0.8805 | 0.9272 |
-| BiLSTM | 46 维聚合 | 69,697 | 0.8797 | 0.9293 |
-| Attention | 46 维聚合 | 70,209 | 0.8840 | 0.9293 |
+| RF-7d | 7 维计数 | N/A | 0.8911 | 0.9178 |
+| LSTM-7d | 7 维序列 | 33,857 | 0.7985 | 0.6302 |
+| BiLSTM-7d | 7 维序列 | 67,201 | 0.8086 | 0.7080 |
+| Attention-7d | 7 维序列 | 67,713 | 0.7995 | 0.7011 |
+| **Meta-Mamba-7d** | **7 维序列** | **21,809** | **0.9111** | **0.9195** |
 | **Meta-Mamba** | **11 维序列** | **22,065** | **0.9144** | **0.9290** |
-| LSTM-7d | **7 维序列** | 33,857 | 0.7985 | 0.6302 |
-| BiLSTM-7d | **7 维序列** | 67,201 | 0.8086 | 0.7080 |
-| Attention-7d | **7 维序列** | 67,713 | 0.7995 | 0.7011 |
-| **MetaMamba-7d** | **7 维序列** | **21,809** | **0.9111** | **0.9195** |
 
 **核心发现**：
-- **MetaMamba-7d（仅7 维序列）F1=0.9111**，已超过 RF-7d（0.8911）、LSTM/BiLSTM/Attention（46 维聚合）的所有结果
-- **7 维事件序列 + MetaMamba 架构 ≈ 11 维 MetaMamba**（差 -0.33% F1）
-- **7 维事件序列 + 简单 LSTM/BiLSTM/Attention** 表现很差（macro_F1 ~0.5）—— 时序信息必须有合适的架构（Selective SSM + FiLM + TC）才能发挥价值
+- **Meta-Mamba-7d（仅7 维事件序列）F1=0.9111**，超过所有简单序列模型（LSTM-7d / BiLSTM-7d / Attention-7d 均 < 0.81）
+- **Meta-Mamba-7d 也超过传统 RF-7d（0.8911）+4.0%**（F1），证明事件序列 + 选择性状态空间 优于 手工聚合
+- **Meta-Mamba（11 维含时间间隔/截止距离/题号）F1=0.9144**，比 7 维版本仅高 0.33% —— 表明 **7 维事件序列 + Mamba 已捕获大部分信号**
+- **简单 7 维序列模型（LSTM-7d/BiLSTM-7d/Attention-7d）F1 < 0.81**：时序信息必须有合适的架构（Selective SSM + FiLM + TC）才能发挥价值
 
 ## 快速开始
 
@@ -105,18 +92,18 @@ python -m models.bilstm_7d.train                  # BiLSTM-7d
 python -m models.attention_7d.train               # Attention-7d
 python -m models.meta_mamba_7d.train              # MetaMamba-7d
 
-python -m models.rf.train                         # RF (46 维)
-python -m models.lstm.train                       # LSTM (46 维)
-python -m models.bilstm.train                     # BiLSTM (46 维)
-python -m models.attention.train                  # Attention (46 维)
+python -m models.lstm_7d.train                     # LSTM (7 维序列)
+python -m models.bilstm_7d.train                   # BiLSTM (7 维序列)
+python -m models.attention_7d.train                # Attention (7 维序列)
+python -m models.rf7.train                        # RF (7 维计数)
 python -m models.meta_mamba.train                 # MetaMamba (11 维)
 ```
 
 ### 跑全部模型（统一入口）
 ```bash
 python main.py --model all               # 跑全部 10 个模型
-python main.py --model rf7d rf_7d lstm_7d attention_7d meta_mamba_7d   # 仅 7 维
-python main.py --model rf lstm bilstm attention meta_mamba            # 原始 6 个
+python main.py --model rf7 lstm_7d bilstm_7d attention_7d meta_mamba meta_mamba_7d   # 仅 7-dim 与 11-dim 序列模型
+python main.py --model rf7 meta_mamba meta_mamba_7d          # 选指定模型
 python main.py --model meta_mamba_7d     # 单跑 MetaMamba-7d
 ```
 
@@ -124,7 +111,7 @@ python main.py --model meta_mamba_7d     # 单跑 MetaMamba-7d
 ```bash
 python -m analysis.compare     # 汇总各模型结果 → outputs/comparison.{csv,md}
 python -m analysis.visualize   # 生成混淆矩阵 / ROC / PR / 对比柱状图
-python -m analysis.generate_paper_figures   # 生成 10 张 paper figures
+python -m analysis.generate_paper_figures   # 生成 6 张 paper figures
 ```
 
 ## 输出内容
@@ -140,12 +127,13 @@ python -m analysis.generate_paper_figures   # 生成 10 张 paper figures
 `outputs/` 汇总：
 - `comparison.csv`：**10 模型** × 多个指标（per-class P/R/F1 + AUC + Macro-F1）
 - `comparison.md`：Markdown 报告
-- `plots/*.png`：5 张对比图（含 7-dim 与 46-dim 分组）
+- `plots/*.png`：6 张对比图（RF-7d / 4 个 7-dim 序列模型 / Meta-Mamba-7d）
 
 `docs/` 论文：
-- `paper_v2_zh.md` / `paper_v2_en.md`：v2 增强版（含 7-dim 对比 + 10 张 figures + 详细公式推导）
+- `paper_v4_zh.md` / `paper_v4_en.md`：⭐ v4 主版本（移除 46 维基线 + 实验结果可视化分析）
+- `paper_v2_zh.md` / `paper_v2_en.md`：v2 增强版（7-dim 对比 + 10 figures + 公式推导）
 - `paper_v1_zh.md` / `paper_v1_en.md`：v1 版本（基于 11-dim MetaMamba）
-- `plots/paper/*.png`：10 张 paper figures
+- `plots/paper/*.png`：6 张 paper figures
 
 ## 评估指标（每类 + 总体）
 

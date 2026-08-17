@@ -16,14 +16,9 @@ RESULTS_DIR = os.path.join(_ROOT, 'results')
 OUTPUTS_DIR = os.path.join(_ROOT, 'outputs')
 
 
-MODEL_ORDER = ['rf', 'rf7', 'lstm', 'bilstm', 'attention', 'meta_mamba',
-                 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
+MODEL_ORDER = ['rf7', 'meta_mamba', 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
 MODEL_NAMES = {
-    'rf':            'Random Forest',
     'rf7':           'RF-7d (raw event counts)',
-    'lstm':       'LSTM',
-    'bilstm':     'BiLSTM',
-    'attention':  'Attention',
     'meta_mamba':    'MetaMamba',
     'lstm_7d':       'LSTM-7d',
     'bilstm_7d':     'BiLSTM-7d',

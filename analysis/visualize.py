@@ -27,13 +27,9 @@ RESULTS_DIR = os.path.join(_ROOT, 'results')
 OUTPUTS_DIR = os.path.join(_ROOT, 'outputs')
 PLOTS_DIR    = os.path.join(OUTPUTS_DIR, 'plots')
 
-MODEL_ORDER = ['rf', 'lstm', 'bilstm', 'attention', 'meta_mamba', 'rf7']
+MODEL_ORDER = ['rf7', 'meta_mamba', 'lstm_7d', 'bilstm_7d', 'attention_7d', 'meta_mamba_7d']
 MODEL_NAMES = {
-    'rf':         'Random Forest',
-    'rf7':        'RF-7d (raw event counts)',
-    'lstm':       'LSTM',
-    'bilstm':     'BiLSTM',
-    'attention':  'Attention',
+    'rf7':           'RF-7d (raw event counts)',
     'meta_mamba':    'MetaMamba',
     'lstm_7d':       'LSTM-7d',
     'bilstm_7d':     'BiLSTM-7d',
@@ -41,12 +37,12 @@ MODEL_NAMES = {
     'meta_mamba_7d': 'MetaMamba-7d',
 }
 COLORS = {
-    'rf':         '#1f77b4',
-    'rf7':        '#17becf',
-    'lstm':       '#ff7f0e',
-    'bilstm':     '#2ca02c',
-    'attention':  '#d62728',
-    'meta_mamba': '#9467bd',
+    'rf7':           '#17becf',
+    'meta_mamba':    '#9467bd',
+    'lstm_7d':       '#ff7f0e',
+    'bilstm_7d':     '#2ca02c',
+    'attention_7d':  '#d62728',
+    'meta_mamba_7d': '#8c564b',
 }
 
 
