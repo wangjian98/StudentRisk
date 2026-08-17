@@ -15,6 +15,10 @@ import sys
 import argparse
 import time
 
+# 自动应用中文字体（确保 analyze.generate_paper_figures / generate_fig11 输出无乱码）
+from analysis.setup_fonts import setup_chinese_font
+setup_chinese_font()
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _ROOT = _HERE
 if _ROOT not in sys.path:
