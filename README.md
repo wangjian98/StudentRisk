@@ -2,13 +2,13 @@
 
 基于学生 IDE 编程日志预测课程是否通过 / 挂科（Early Dropout/Failure Prediction）。
 
-![Version](https://img.shields.io/badge/version-v4.0-blue) ![Status](https://img.shields.io/badge/status-active-success) ![Models](https://img.shields.io/badge/models-6-7d%2F11d-green) ![License](https://img.shields.io/badge/license-Academic-lightgrey)
+![Version](https://img.shields.io/badge/version-v5.0-blue) ![Status](https://img.shields.io/badge/status-active-success) ![Models](https://img.shields.io/badge/models-6-7d%2F11d-green) ![License](https://img.shields.io/badge/license-Academic-lightgrey)
 
 > 🎉 **v4.0 已发布**（2026-08-17）：移除所有使用 46 维手工聚合特征的基线模型（RF / LSTM / BiLSTM / Attention），聚焦 **6 个 7-dim / 11-dim 序列模型** 的公平对比。
 >
 > **核心发现**：Meta-Mamba-7d（仅 7 维事件序列 + Mamba 架构）F1 = 0.9111，超过 RF-7d（F1=0.8911）+2.0%，证明 **原始事件序列 + 选择性状态空间** 比 **手工聚合** 更强；Meta-Mamba（11-dim）仅 +0.33% F1 边际增益。
 >
-> 详见 [`paper_v4_zh.md`](docs/paper_v4_zh.md) / [`paper_v4_en.md`](docs/paper_v4_en.md)（v4 主版本，含 5.6 节「实验结果可视化分析」）
+> 详见 [`paper_v5_zh.md`](docs/paper_v5_zh.md) / [`paper_v5_en.md`](docs/paper_v5_en.md)（v5 主版本，重构自 v3，含 4.13 节「实验结果可视化分析」）
 
 
 
@@ -87,13 +87,13 @@ StudentRisk/
 ├── analysis/                    # 对比分析与可视化
 │   ├── compare.py               # → comparison.csv / .md
 │   ├── visualize.py             # → plots/*.png
-│   └── generate_paper_figures.py  # → 6 张 paper figures
+│   └── generate_paper_figures.py  # → 10 张 paper figures
 ├── docs/                        # 论文与 figures
-│   ├── paper_v4_zh.md / paper_v4_en.md  # ⭐ v4 主版本（移除 46 维，含 6 张图）
-│   ├── paper_zh.md / paper_en.md # v3 早期版本（仍含 46 维对比）
+│   ├── paper_v5_zh.md / paper_v5_en.md  # ⭐ v5 主版本（重构自 v3，6 模型 + 10 张图）
+│   ├── paper_v4_zh.md / paper_v4_en.md  # v4 简化版（基于 paper_zh.md）
 │   ├── paper_v2_zh.md / paper_v2_en.md  # v2 7-dim 对比版
 │   ├── paper_v1_zh.md / paper_v1_en.md  # v1 增强版
-│   └── plots/paper/             # 6 张 paper figures
+│   └── plots/paper/             # 10+ 张 paper figures
 └── outputs/                     # 最终输出
     ├── comparison.csv           # 6 模型横向对比
     ├── comparison.md            # Markdown 报告
@@ -158,7 +158,7 @@ python main.py --model meta_mamba_7d     # 单跑 MetaMamba-7d
 ```bash
 python -m analysis.compare     # 汇总各模型结果 → outputs/comparison.{csv,md}
 python -m analysis.visualize   # 生成混淆矩阵 / ROC / PR / 对比柱状图
-python -m analysis.generate_paper_figures   # 生成 6 张 paper figures
+python -m analysis.generate_paper_figures   # 生成 10+ 张 paper figures
 ```
 
 ## 输出内容
@@ -177,7 +177,9 @@ python -m analysis.generate_paper_figures   # 生成 6 张 paper figures
 - `plots/*.png`：6 张对比图（RF-7d / 4 个 7-dim 序列模型 / Meta-Mamba-7d）
 
 `docs/` 论文：
-- `paper_v4_zh.md` / `paper_v4_en.md`：⭐ v4 主版本（移除 46 维基线 + 实验结果可视化分析）
+- `paper_v5_zh.md` / `paper_v5_en.md`：⭐ v5 主版本（重构自 v3 完整版，6 模型对比 + 10 张 figure + 4.13 节可视化分析）
+- `paper_v4_zh.md` / `paper_v4_en.md`：v4 简化版（基于 paper_zh.md，4 模型对比）
+- `paper_v3_zh.md` / `paper_v3_en.md`：v3 完整版（1008/1016 行，含 32 篇审计版参考文献）
 - `paper_v2_zh.md` / `paper_v2_en.md`：v2 增强版（7-dim 对比 + 10 figures + 公式推导）
 - `paper_v1_zh.md` / `paper_v1_en.md`：v1 版本（基于 11-dim MetaMamba）
 - `plots/paper/*.png`：6 张 paper figures
@@ -226,7 +228,8 @@ https://github.com/wangjian98/StudentRisk
 
 | 版本 | 日期 | 关键变更 |
 |---|---|---|
-| **v4.0** ⭐ 当前 | 2026-08-17 | **架构清洁版**：删除 4 个 46-dim 手工聚合特征模型（RF / LSTM / BiLSTM / Attention）+ 213 行 `data/features.py` + 28 个 results 文件。6 个保留模型（RF-7d / LSTM-7d / BiLSTM-7d / Attention-7d / Meta-Mamba-7d / Meta-Mamba）。新增 `paper_v4_zh.md` / `paper_v4_en.md` 主版本（含 5.6 节可视化分析）。 |
+| **v5.0** ⭐ 当前 | 2026-08-18 | **主论文重构版**：基于远程 v3.0/3.1/3.2 完整版（1008 行中文 / 1016 行英文），重写为 6 模型对比。删除所有 46-dim 手工聚合基线，新增 4.13 节「实验结果可视化分析」（10 张 figure 完整解读）。新增 `paper_v5_zh.md` (1054 行) / `paper_v5_en.md` (1065 行)。 |
+| v4.0 | 2026-08-17 | **架构清洁版**：删除 4 个 46-dim 手工聚合特征模型（RF / LSTM / BiLSTM / Attention）+ 213 行 `data/features.py` + 28 个 results 文件。6 个保留模型。新增 `paper_v4_zh.md` / `paper_v4_en.md`（基于 paper_zh.md 的简化版）。 |
 | v3.0 | 2026-08-16 | v3 完整论文版：970 行中文 / 983 行英文 + 13 张图 |
 | v2.0 | 2026-08-15 | 10 模型对比版（5-fold × 3 seeds OOF）|
 | v1.0 | 2026-08-15 | 初版：Meta-Mamba + 5 baselines |
