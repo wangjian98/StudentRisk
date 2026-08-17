@@ -2,9 +2,13 @@
 
 基于学生 IDE 编程日志预测课程是否通过 / 挂科（Early Dropout/Failure Prediction）。
 
-![Version](https://img.shields.io/badge/version-v3.1-blue) ![Status](https://img.shields.io/badge/status-audited-success) ![Papers](https://img.shields.io/badge/papers-32%20references-orange) ![License](https://img.shields.io/badge/license-Academic-lightgrey)
+![Version](https://img.shields.io/badge/version-v4.0-blue) ![Status](https://img.shields.io/badge/status-active-success) ![Models](https://img.shields.io/badge/models-6-7d%2F11d-green) ![License](https://img.shields.io/badge/license-Academic-lightgrey)
 
-> 🎉 **v3.1 已发布**（2026-08-17）：经合作导师王健两轮审计（3 篇替换 + 6 处细节修正 + 22 处正文引用同步），参考文献从 39 篇降至 **32 篇真实可信文献**，编号连续 [1]-[32]。详见 [v3.1 Release Notes](https://github.com/wangjian98/StudentRisk/releases/tag/v3.1) 和 [审计修订记录](docs/refs_audit_report.md)。
+> 🎉 **v4.0 已发布**（2026-08-17）：移除所有使用 46 维手工聚合特征的基线模型（RF / LSTM / BiLSTM / Attention），聚焦 **6 个 7-dim / 11-dim 序列模型** 的公平对比。
+>
+> **核心发现**：Meta-Mamba-7d（仅 7 维事件序列 + Mamba 架构）F1 = 0.9111，超过 RF-7d（F1=0.8911）+2.0%，证明 **原始事件序列 + 选择性状态空间** 比 **手工聚合** 更强；Meta-Mamba（11-dim）仅 +0.33% F1 边际增益。
+>
+> 详见 [`paper_v4_zh.md`](docs/paper_v4_zh.md) / [`paper_v4_en.md`](docs/paper_v4_en.md)（v4 主版本，含 5.6 节「实验结果可视化分析」）
 
 
 
@@ -222,7 +226,7 @@ https://github.com/wangjian98/StudentRisk
 
 | 版本 | 日期 | 关键变更 |
 |---|---|---|
-| **v3.1** ⭐ 当前 | 2026-08-17 | **审计版**：王健复核后 3 篇替换（Angulo→Alhothali、Hayward→Leinonen、Shum→Azcona）+ 6 处细节修正（Mamba ICLR 删除、CAML 改 2019、TabPFN 改 Nature+DOI、AutoML 删"新世纪版 2024"等）+ 22 处正文引用同步。32 篇真实文献，编号连续 [1]-[32]。 |
+| **v4.0** ⭐ 当前 | 2026-08-17 | **架构清洁版**：删除 4 个 46-dim 手工聚合特征模型（RF / LSTM / BiLSTM / Attention）+ 213 行 `data/features.py` + 28 个 results 文件。6 个保留模型（RF-7d / LSTM-7d / BiLSTM-7d / Attention-7d / Meta-Mamba-7d / Meta-Mamba）。新增 `paper_v4_zh.md` / `paper_v4_en.md` 主版本（含 5.6 节可视化分析）。 |
 | v3.0 | 2026-08-16 | v3 完整论文版：970 行中文 / 983 行英文 + 13 张图 |
 | v2.0 | 2026-08-15 | 10 模型对比版（5-fold × 3 seeds OOF）|
 | v1.0 | 2026-08-15 | 初版：Meta-Mamba + 5 baselines |
