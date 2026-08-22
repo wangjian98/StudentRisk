@@ -4,21 +4,10 @@
     123,
     777
   ],
-  "n_splits": 5,
+  "n_splits": 8,
   "threshold": 0.5,
-  "meta_mamba_cfg": {
-    "d_model": 64,
-    "n_heads": 4,
-    "n_layers": 2,
-    "dim_feedforward": 128,
-    "dropout": 0.3,
-    "lr": 0.001,
-    "weight_decay": 0.001,
-    "epochs": 60,
-    "batch_size": 32,
-    "patience": 12
-  },
+  "meta_mamba_cfg": {},
   "n_params": 22065,
-  "max_len": 128,
+  "max_len": 256,
   "n_tasks": 7
 }
