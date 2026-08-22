@@ -79,6 +79,7 @@ def train_one_fold(model, seq_tr, mask_tr, task_tr, y_tr,
                    epochs=40, lr=1e-3, weight_decay=1e-3,
                    batch_size=16, patience=10,
                    contrastive_weight=0.3,
+                   use_film: bool = True,
                    device='cpu'):
     """Train Meta-Mamba with supervised + task-contrastive loss."""
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -115,7 +116,7 @@ def train_one_fold(model, seq_tr, mask_tr, task_tr, y_tr,
             x = model.input_norm(x)
             for blk in model.blocks:
                 x = blk(x)
-            x_film = model.film(x, task_tr_t[idx])
+            x_film = model.film(x, task_tr_t[idx]) if use_film else x
             mask_f = mask_tr_t[idx].unsqueeze(-1)
             x_sum = (x_film * mask_f).sum(dim=1)
             denom = mask_f.sum(dim=1).clamp(min=1.0)

@@ -35,7 +35,8 @@ def load_config(path: str = None) -> dict:
 
 def run(seeds=(42, 123, 777), n_splits: int = 5, threshold: float = 0.5,
         out_dir: str = None, save_oof: bool = True, config: dict = None,
-        device: str = None, max_len: int = 128, run_fewshot: bool = True):
+        device: str = None, max_len: int = 128, run_fewshot: bool = True,
+        use_film: bool = True, use_tc: bool = True):
     if config is None:
         config = load_config()
     mcfg = config.get('meta_mamba', config.get('attention', {}))
@@ -79,7 +80,8 @@ def run(seeds=(42, 123, 777), n_splits: int = 5, threshold: float = 0.5,
                 weight_decay=mcfg.get('weight_decay', 1e-3),
                 batch_size=mcfg.get('batch_size', 16),
                 patience=mcfg.get('patience', 10),
-                contrastive_weight=mcfg.get('contrastive_weight', 0.3),
+                contrastive_weight=(mcfg.get('contrastive_weight', 0.3) if use_tc else 0.0),
+                use_film=use_film,
                 device=device,
             )
             model.eval()
@@ -127,6 +129,7 @@ def run(seeds=(42, 123, 777), n_splits: int = 5, threshold: float = 0.5,
 
     payload = {
         'model': 'MetaMamba-7d',
+        'ablation': {'no_film': not use_film, 'no_tc': not use_tc},
         'feature_dimension': 7,
         'config': mcfg,
         'n_params': n_params,
@@ -173,13 +176,16 @@ def main():
     parser.add_argument('--out-dir', type=str, default=None)
     parser.add_argument('--no-oof', action='store_true')
     parser.add_argument('--no-fewshot', action='store_true')
+    parser.add_argument('--no-film', action='store_true', help='Ablation: remove FiLM modulation')
+    parser.add_argument('--no-tc', action='store_true', help='Ablation: remove Task-Contrastive loss')
     args = parser.parse_args()
     config = load_config()
     seeds = args.seeds if args.seeds else config.get('cv', {}).get('seeds', [42, 123, 777])
     n_splits = args.n_splits or config.get('cv', {}).get('n_splits', 5)
     run(seeds=seeds, n_splits=n_splits, threshold=args.threshold,
         out_dir=args.out_dir, save_oof=not args.no_oof, config=config,
-        max_len=args.max_len, run_fewshot=not args.no_fewshot)
+        max_len=args.max_len, run_fewshot=not args.no_fewshot,
+        use_film=not args.no_film, use_tc=not args.no_tc)
 
 
 if __name__ == '__main__':
