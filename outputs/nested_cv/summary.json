@@ -1,0 +1,42 @@
+{
+  "method": "Mini Nested CV (5 outer x 2 inner x 4 HP)",
+  "reference_model": "MetaMamba-7d",
+  "outer_seed": 42,
+  "outer_k": 5,
+  "inner_k": 2,
+  "hp_grid": [
+    {
+      "lr": 0.001,
+      "contrastive_weight": 0.0,
+      "tag": "lr1e-3_noTC"
+    },
+    {
+      "lr": 0.001,
+      "contrastive_weight": 0.3,
+      "tag": "lr1e-3_TC"
+    },
+    {
+      "lr": 0.0005,
+      "contrastive_weight": 0.0,
+      "tag": "lr5e-4_noTC"
+    },
+    {
+      "lr": 0.0005,
+      "contrastive_weight": 0.3,
+      "tag": "lr5e-4_TC"
+    }
+  ],
+  "outer_test_macro_f1": [
+    0.8748353096179182,
+    0.8625843780135005,
+    0.904233870967742,
+    0.8578629032258065,
+    0.8776041666666667
+  ],
+  "mean_macro_f1": 0.8754241256983267,
+  "std_macro_f1": 0.018085604502118068,
+  "se_macro_f1": 0.008088128216182447,
+  "ci_95_low": 0.8529678817022948,
+  "ci_95_high": 0.8978803696943587,
+  "total_seconds": 1240.088984489441
+}
