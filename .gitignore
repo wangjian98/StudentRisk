@@ -48,3 +48,4 @@ htmlcov/
 # Large data files (data should be external)
 data/raw/
 *.csv.bak
+results_5fold_backup_*/
