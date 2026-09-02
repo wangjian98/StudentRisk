@@ -4,8 +4,6 @@
   ],
   "n_splits": 5,
   "threshold": 0.5,
-  "lstm_cfg": {},
-  "max_len": 128,
-  "n_params": 33857,
+  "rf_cfg": {},
   "feature_dimension": 7
 }

@@ -20,7 +20,6 @@ from data import load_dataset
 from models.base import set_seed, evaluate_predictions, save_results
 from models.lstm_7d.model import LSTM7DClassifier
 from models.lstm_7d.data import build_event_sequences_7d
-from models.lstm.train import train_one_fold as lstm_train_one_fold
 
 
 def load_config(path: str = None) -> dict:

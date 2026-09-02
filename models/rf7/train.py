@@ -16,7 +16,8 @@ if _ROOT not in sys.path:
 
 from data import load_dataset
 from models.base import set_seed, evaluate_predictions, save_results
-from models.rf.model import RFModel
+# 2026-09-02 fix: models.rf (46-dim) was deleted; alias sklearn RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier as RFModel
 from models.rf7.data import build_7dim_features, EVENT_TYPES_7
 
 
@@ -62,7 +63,7 @@ def run(seeds=(42, 123, 777), n_splits: int = 5, threshold: float = 0.5,
                 random_state=seed * 1000 + fold_idx_,
             )
             rf.fit(X[tr_idx], y[tr_idx])
-            p = rf.predict_proba(X[va_idx])
+            p = rf.predict_proba(X[va_idx])[:, 1]  # P(failed=1)
             oof[va_idx] += p
             fold_idx[va_idx] = fold_idx_
             fold_m = evaluate_predictions(y[va_idx], p, threshold=threshold)
@@ -81,7 +82,7 @@ def run(seeds=(42, 123, 777), n_splits: int = 5, threshold: float = 0.5,
         random_state=42,
     )
     rf_final.fit(X, y)
-    fi = rf_final.model.feature_importances_.tolist()
+    fi = rf_final.feature_importances_.tolist()
     feature_importance = dict(zip(feat_names, [round(float(x), 4) for x in fi]))
 
     fold_df = pd.DataFrame(fold_records)

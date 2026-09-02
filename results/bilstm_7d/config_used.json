@@ -1,10 +1,8 @@
 {
   "seeds": [
-    42,
-    123,
-    777
+    42
   ],
-  "n_splits": 8,
+  "n_splits": 5,
   "threshold": 0.5,
   "bilstm_cfg": {},
   "max_len": 128,
