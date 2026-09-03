@@ -1,24 +1,21 @@
 # StudentRisk — Multi-Model Evaluation Report
 > Label convention: **Failed=1 (positive class)**, Passed=0
 > Dataset: CS1 (n=473, fail_rate=0.6638)
-> Cross-validation: 8-fold × 3 seeds (StratifiedKFold)
+> Cross-validation: 5-fold × 3 seeds (StratifiedKFold)
 > Threshold: 0.5
-> **RF-7d excluded from this run**: implementation is currently a stub (`_StubRFModel`); main.py reported `_StubRFModel() takes no arguments` during the 2026-08-21/22 run. To re-include, complete `models/rf7/train.py` and re-execute.
-
-
-
 
 ---
 
-## 1. Overall Metrics (8-fold × 3 seeds OOF)
+## 1. Overall Metrics (5-fold × N seeds OOF)
 
 | Model | Accuracy | Macro-F1 | Weighted-F1 | ROC-AUC | PR-AUC |
 |---|---|---|---|---|---|
-| MetaMamba | 0.8901 | 0.8787 | 0.8908 | 0.9347 | 0.9713 |
-| LSTM-7d | 0.6617 | 0.3982 | 0.5287 | 0.6225 | 0.7609 |
-| BiLSTM-7d | 0.6850 | 0.4822 | 0.5884 | 0.6750 | 0.7930 |
-| Attention-7d | 0.6998 | 0.5624 | 0.6428 | 0.7108 | 0.8267 |
-| MetaMamba-7d | 0.8901 | 0.8783 | 0.8907 | 0.9293 | 0.9669 |
+| RF-7d (raw event counts) | 0.8584 | 0.8496 | 0.8615 | 0.9179 | 0.9606 |
+| MetaMamba | 0.8858 | 0.8736 | 0.8865 | 0.9318 | 0.9696 |
+| LSTM-7d | 0.6638 | 0.4107 | 0.5373 | 0.6190 | 0.7502 |
+| BiLSTM-7d | 0.6723 | 0.4518 | 0.5657 | 0.6430 | 0.7641 |
+| Attention-7d | 0.6913 | 0.5302 | 0.6204 | 0.6938 | 0.8213 |
+| MetaMamba-7d | 0.8837 | 0.8715 | 0.8845 | 0.9188 | 0.9608 |
 
 ## 2. Per-Class Precision / Recall / F1
 
@@ -26,31 +23,34 @@
 
 | Model | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| MetaMamba | 0.8166 | 0.8679 | 0.8415 | 159 |
-| LSTM-7d | 0.0000 | 0.0000 | 0.0000 | 159 |
-| BiLSTM-7d | 0.7778 | 0.0881 | 0.1582 | 159 |
-| Attention-7d | 0.6735 | 0.2075 | 0.3173 | 159 |
-| MetaMamba-7d | 0.8204 | 0.8616 | 0.8405 | 159 |
+| RF-7d (raw event counts) | 0.7300 | 0.9182 | 0.8134 | 159 |
+| MetaMamba | 0.8144 | 0.8553 | 0.8344 | 159 |
+| LSTM-7d | 0.5000 | 0.0126 | 0.0245 | 159 |
+| BiLSTM-7d | 0.6429 | 0.0566 | 0.1040 | 159 |
+| Attention-7d | 0.6757 | 0.1572 | 0.2551 | 159 |
+| MetaMamba-7d | 0.8095 | 0.8553 | 0.8318 | 159 |
 
 **Class 1 = FAILED** (positive class)
 
 | Model | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| MetaMamba | 0.9309 | 0.9013 | 0.9159 | 314 |
-| LSTM-7d | 0.6631 | 0.9968 | 0.7964 | 314 |
-| BiLSTM-7d | 0.6813 | 0.9873 | 0.8062 | 314 |
-| Attention-7d | 0.7028 | 0.9490 | 0.8076 | 314 |
-| MetaMamba-7d | 0.9281 | 0.9045 | 0.9161 | 314 |
+| RF-7d (raw event counts) | 0.9524 | 0.8280 | 0.8859 | 314 |
+| MetaMamba | 0.9248 | 0.9013 | 0.9129 | 314 |
+| LSTM-7d | 0.6652 | 0.9936 | 0.7969 | 314 |
+| BiLSTM-7d | 0.6732 | 0.9841 | 0.7995 | 314 |
+| Attention-7d | 0.6927 | 0.9618 | 0.8053 | 314 |
+| MetaMamba-7d | 0.9246 | 0.8981 | 0.9111 | 314 |
 
 ## 3. Per-Fold Stability (Macro-F1 mean ± std)
 
 | Model | Macro-F1 Mean | Macro-F1 Std | ROC-AUC Mean | ROC-AUC Std |
 |---|---|---|---|---|
-| MetaMamba | 0.8753 | 0.0340 | 0.9399 | 0.0307 |
-| LSTM-7d | 0.4064 | 0.0290 | 0.6050 | 0.0691 |
-| BiLSTM-7d | 0.4888 | 0.0946 | 0.6384 | 0.0867 |
-| Attention-7d | 0.5328 | 0.0913 | 0.6832 | 0.0836 |
-| MetaMamba-7d | 0.8766 | 0.0324 | 0.9233 | 0.0331 |
+| RF-7d (raw event counts) | 0.8539 | 0.0355 | 0.9175 | 0.0252 |
+| MetaMamba | 0.8774 | 0.0242 | 0.9410 | 0.0200 |
+| LSTM-7d | 0.4204 | 0.0395 | 0.6073 | 0.0513 |
+| BiLSTM-7d | 0.4612 | 0.0713 | 0.6194 | 0.0660 |
+| Attention-7d | 0.5206 | 0.0976 | 0.6592 | 0.0832 |
+| MetaMamba-7d | 0.8744 | 0.0205 | 0.9251 | 0.0217 |
 
 ## 4. Confusion Matrices (OOF aggregated)
 
@@ -58,21 +58,23 @@ Format: rows = true class, cols = predicted class. Class 0=PASSED, Class 1=FAILE
 
 | Model | TN | FP | FN | TP |
 |---|---|---|---|---|
-| MetaMamba | 138 | 21 | 31 | 283 |
-| LSTM-7d | 0 | 159 | 1 | 313 |
-| BiLSTM-7d | 14 | 145 | 4 | 310 |
-| Attention-7d | 33 | 126 | 16 | 298 |
-| MetaMamba-7d | 137 | 22 | 30 | 284 |
+| RF-7d (raw event counts) | 146 | 13 | 54 | 260 |
+| MetaMamba | 136 | 23 | 31 | 283 |
+| LSTM-7d | 2 | 157 | 2 | 312 |
+| BiLSTM-7d | 9 | 150 | 5 | 309 |
+| Attention-7d | 25 | 134 | 12 | 302 |
+| MetaMamba-7d | 136 | 23 | 32 | 282 |
 
 ## 5. Training Time
 
 | Model | n_params | Elapsed (sec) |
 |---|---|---|
-| MetaMamba | 22,065 | 5013.1 |
-| LSTM-7d | 33,857 | 29.6 |
-| BiLSTM-7d | 67,201 | 35.6 |
-| Attention-7d | 67,713 | 56.6 |
-| MetaMamba-7d | 21,809 | 2204.6 |
+| RF-7d (raw event counts) | N/A | 5.3 |
+| MetaMamba | 22,065 | 2995.2 |
+| LSTM-7d | 33,857 | 16.8 |
+| BiLSTM-7d | 67,201 | 20.0 |
+| Attention-7d | 67,713 | 29.0 |
+| MetaMamba-7d | 21,809 | 1267.3 |
 
 ## 6. Visualizations
 

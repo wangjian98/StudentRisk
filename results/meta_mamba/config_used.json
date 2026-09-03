@@ -4,7 +4,7 @@
     123,
     777
   ],
-  "n_splits": 8,
+  "n_splits": 5,
   "threshold": 0.5,
   "meta_mamba_cfg": {},
   "n_params": 22065,
