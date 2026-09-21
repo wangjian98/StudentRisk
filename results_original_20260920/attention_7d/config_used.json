@@ -1,0 +1,13 @@
+{
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "n_splits": 5,
+  "threshold": 0.5,
+  "attention_cfg": {},
+  "max_len": 128,
+  "n_params": 67713,
+  "feature_dimension": 7
+}

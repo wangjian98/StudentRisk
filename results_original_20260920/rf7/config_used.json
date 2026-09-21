@@ -1,0 +1,11 @@
+{
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "n_splits": 5,
+  "threshold": 0.5,
+  "rf_cfg": {},
+  "feature_dimension": 7
+}
