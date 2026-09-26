@@ -388,8 +388,20 @@ def main():
     parser.add_argument('--out-dir', type=str, default=None)
     parser.add_argument('--no-oof', action='store_true')
     parser.add_argument('--no-fewshot', action='store_true')
+    # Architecture hyperparameters (override defaults)
+    parser.add_argument('--lr', type=float, default=None, help='Learning rate')
+    parser.add_argument('--d-model', type=int, default=None, help='Hidden dim')
+    parser.add_argument('--d-state', type=int, default=None, help='SSM state dim')
+    parser.add_argument('--n-layers', type=int, default=None, help='Number of MambaBlock layers')
+    parser.add_argument('--dropout', type=float, default=None, help='Dropout rate')
     args = parser.parse_args()
     config = load_config()
+    if 'meta_mamba' not in config: config['meta_mamba'] = {}
+    if args.lr is not None:       config['meta_mamba']['lr'] = args.lr
+    if args.d_model is not None:  config['meta_mamba']['d_model'] = args.d_model
+    if args.d_state is not None:  config['meta_mamba']['d_state'] = args.d_state
+    if args.n_layers is not None: config['meta_mamba']['n_layers'] = args.n_layers
+    if args.dropout is not None:  config['meta_mamba']['dropout'] = args.dropout
     seeds = args.seeds if args.seeds else config.get('cv', {}).get('seeds', [42, 123, 777])
     n_splits = args.n_splits or config.get('cv', {}).get('n_splits', 5)
     run(seeds=seeds, n_splits=n_splits, threshold=args.threshold,

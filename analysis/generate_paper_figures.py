@@ -354,7 +354,7 @@ def fig6_per_fold_stability():
     ax.set_title('Figure 6. Per-Fold Macro-F1 Stability (15 folds = 5×3)',
                  fontsize=12, fontweight='bold')
     ax.grid(axis='y', alpha=0.3)
-    ax.set_ylim(0.7, 0.95)
+    ax.set_ylim(0.40, 0.95)
     plt.tight_layout()
     p = os.path.join(OUT_DIR, 'fig6_per_fold_stability.png')
     plt.savefig(p, dpi=140, bbox_inches='tight')
@@ -523,30 +523,36 @@ def fig9_feature_importance():
 # Fig 10: Ablation analysis (conceptual)
 # ─────────────────────────────────────────────────────────────────────────
 def fig10_ablation_analysis():
-    """Conceptual ablation: estimated F1 contribution of each component."""
-    components = ['RF-7d\n(baseline)',
-                  'LSTM-7d\n(7-dim seq)',
-                  'BiLSTM-7d\n(7-dim seq)',
-                  'Attention-7d\n(7-dim seq)',
-                  '+ event\nsequence\n(Mamba)',
-                  '+ FiLM\n+ task\ncontrastive',
-                  'Meta-Mamba\n(Full)']
-    estimated_f1 = [0.891, 0.799, 0.809, 0.800, 0.890, 0.905, 0.914]
-    colors_bar = ['#bbbbbb', '#a9dfbf', '#a9dfbf', '#82e0aa',
-                  '#f7dc6f', '#f5b7b1', '#9467bd']
+    """Ablation from real results.json (f1_class_1, OOF aggregated)."""
+    import json
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
+    def load(name):
+        with open(os.path.join(root, name, "results.json")) as f:
+            return json.load(f)["overall"]
+    rows = [
+        ("RF-7d\n(baseline)",       load("rf7"),                            "#bbbbbb"),
+        ("LSTM-7d\n(7-dim seq)",    load("lstm_7d"),                        "#a9dfbf"),
+        ("BiLSTM-7d\n(7-dim seq)",  load("bilstm_7d"),                      "#a9dfbf"),
+        ("Attention-7d\n(7-dim seq)", load("attention_7d"),                  "#82e0aa"),
+        ("Meta-Mamba-7d\n(full)",   load("meta_mamba_7d"),                  "#9467bd"),
+        ("− FiLM",                  load("meta_mamba_7d_ablation_no_film"), "#f5b7b1"),
+        ("− TC",                    load("meta_mamba_7d_ablation_no_tc"), "#fadbd8"),
+        ("− FiLM − TC",             load("meta_mamba_7d_ablation_no_film_no_tc"), "#e59866"),
+        ("Meta-Mamba\n(11-dim full)", load("meta_mamba"),                    "#3498db"),
+    ]
+    components = [r[0] for r in rows]
+    f1s = [r[1]["f1_class_1"] for r in rows]
+    colors = [r[2] for r in rows]
 
     fig, ax = plt.subplots(figsize=(12, 4.5))
-    bars = ax.bar(components, estimated_f1, color=colors_bar, alpha=0.85, edgecolor='black')
-    ax.set_ylim(0.7, 0.95)
+    bars = ax.bar(components, f1s, color=colors, alpha=0.85, edgecolor='black')
+    ax.set_ylim(0.40, 0.95)
     ax.set_ylabel('F1 (FAILED class)', fontsize=11)
-    ax.set_title('Figure 10. Conceptual Ablation — Component Contributions',
+    ax.set_title('Figure 10. Ablation — Component Contributions (real results, 3 seeds × 5-fold OOF)',
                  fontsize=12, fontweight='bold')
-    for bar, v in zip(bars, estimated_f1):
+    for bar, v in zip(bars, f1s):
         ax.text(bar.get_x() + bar.get_width()/2, v + 0.003, f'{v:.3f}',
                 ha='center', fontsize=9, fontweight='bold')
-    ax.axhline(0.890, color='gray', linestyle=':', lw=1, alpha=0.5)
-    ax.text(len(components)-1, 0.892, 'Meta-Mamba without FiLM/TC', fontsize=8,
-            color='gray', ha='right', va='bottom')
     ax.grid(axis='y', alpha=0.3)
     plt.xticks(fontsize=8)
     plt.tight_layout()

@@ -49,3 +49,15 @@ htmlcov/
 data/raw/
 *.csv.bak
 results_5fold_backup_*/
+
+# v6 transient files (do not commit)
+*.bak-*
+*.bak
+*.stdout
+*.done
+.*.stdout
+.*.done
+.*.bak-*
+.ablation_remaining_done
+.maxlen_sweep_done
+.sweep_done

@@ -178,8 +178,14 @@ def main():
     parser.add_argument('--no-fewshot', action='store_true')
     parser.add_argument('--no-film', action='store_true', help='Ablation: remove FiLM modulation')
     parser.add_argument('--no-tc', action='store_true', help='Ablation: remove Task-Contrastive loss')
+    parser.add_argument('--tc-weight', type=float, default=None, help='TC contrastive loss weight (lambda)')
+    parser.add_argument('--batch-size', type=int, default=None, help='Override batch size')
     args = parser.parse_args()
     config = load_config()
+    _mkey = 'meta_mamba' if 'meta_mamba' in config else ('attention' if 'attention' in config else 'meta_mamba')
+    if _mkey not in config: config[_mkey] = {}
+    if args.tc_weight is not None: config[_mkey]['contrastive_weight'] = args.tc_weight
+    if args.batch_size is not None: config[_mkey]['batch_size'] = args.batch_size
     seeds = args.seeds if args.seeds else config.get('cv', {}).get('seeds', [42, 123, 777])
     n_splits = args.n_splits or config.get('cv', {}).get('n_splits', 5)
     run(seeds=seeds, n_splits=n_splits, threshold=args.threshold,

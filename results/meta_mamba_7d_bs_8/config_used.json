@@ -1,0 +1,17 @@
+{
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "n_splits": 5,
+  "threshold": 0.5,
+  "meta_mamba_cfg": {
+    "contrastive_weight": 0.0,
+    "batch_size": 8
+  },
+  "n_params": 21809,
+  "max_len": 128,
+  "n_tasks": 7,
+  "feature_dimension": 7
+}

@@ -1,0 +1,19 @@
+{
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "n_splits": 5,
+  "threshold": 0.5,
+  "meta_mamba_cfg": {},
+  "n_params": 22065,
+  "max_len": 256,
+  "n_tasks": 7,
+  "ablation": {
+    "no_film": true,
+    "no_tc": false
+  },
+  "tc_weight": 0.3,
+  "use_film": false
+}
