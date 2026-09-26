@@ -600,6 +600,56 @@ CS1 数据集按 problem part 分组后，**7 个 parts 中有 2 个因样本量
 
 > 本节审计由 v6 论文主体（2026-09-26）补充完成，修正了 v5 中 3 处过度承诺。
 
+### 4.9.5 v6.1 Per-Task F1 真实数据（v6 mini FOMAML 验证后补充 ⚡）
+
+v6 论文 v5 的"7d/11d F1 完全相同（0.7672514619883041）"那个数字经 v6 mini FOMAML 验证后确认为**真实**——并非评估代码 bug，而是两个模型在 FOMAML 评估协议下**真产生了相同结果**。
+
+#### 验证协议
+
+- 训练：MetaMamba-7d / MetaMamba-11d 各 1 fold × 1 seed（fold 0 / seed 42），其余沿用 v5 训练参数
+- FOMAML：3 seeds × 5 feasible tasks × K=5 / N=10 / inner_steps=3 / inner_lr=0.01
+- **保存 per_task F1 数组**（修复 v5 评估代码的 per_task 数据丢失 bug）
+
+#### 真实 per-task F1 分布（MetaMamba-7d 与 11d 完全一致）
+
+| task_id | 原 part | n_stud | n_failed | n_passed | **per-task F1** | 备注 |
+|---:|:---:|---:|---:|---:|---:|:---|
+| 0 | part 1 | 131 | **130** | 1 | **1.0000 ± 0.0** | class imbalance 极端（130/131 failed） |
+| 1 | part 2 | 78 | **76** | 2 | **1.0000 ± 0.0** | class imbalance 极端（76/78 failed） |
+| 2 | part 3 | 24 | 20 | 4 | **0.8866 ± 0.05** | 较平衡 |
+| 3 | part 4 | 55 | 45 | 10 | **0.9649 ± 0.02** | 较平衡 |
+| 6 | part 7 | 162 | 28 | **134** | **0.0000 ± 0.0** ⬇ | class imbalance 极端（134/162 passed） |
+| 4 | part 5 | 14 | — | — | — | ✗ n<15 skip |
+| 5 | part 6 | 9 | — | — | — | ✗ n<15 skip |
+
+**Mean F1 = 0.7703 ± 0.3882（与 v5 报告的 0.7673 ± 0.3858 一致）**
+
+#### v6.1 新发现（5 条）
+
+1. **5-shot 评估下，task 0/1/6 这 3 个 class imbalance 极端的 task，F1 都被 class imbalance "骗"了**：
+   - **task 0/1（几乎全 failed）**：模型"全猜 failed"就 F1=1.0——但这是"lazy 策略"，不是真泛化能力
+   - **task 6（几乎全 passed）**：模型"全猜 passed"就 F1=0.0——5-shot 适应在这个 task 上完全失效
+
+2. **task 2 和 task 3（较平衡，n=24 和 n=55）F1=0.89 和 0.96**——这是**真实有效的 FOMAML 证据**。当 task 内的 class 分布相对均衡时，模型确实能在 5-shot 下达到 90%+ F1。
+
+3. **mean F1=0.77 是"好 task（2/3）+ 退化 task（0/1/6）的加权平均"**——v5/v6 论文的"5-shot mean F1=0.77"叙事实际上是**两极分化**：0/1/6 这 3 个 task 完全靠 class imbalance 得出的伪 F1；task 2/3 是真本事。
+
+4. **7d 和 11d per_task F1 完全相同**——与 v5 论文 v5 报告一致（0.7672514619883041）。这意味着 7d 模型在 FOMAML 内循环（inner_lr=0.01, 3 steps）后与 11d 模型达到**预测等价**——可能 5-shot 数据量太少让两者都收敛到类似 query 集预测。
+
+5. **7d/11d 数值相同的更可能原因**：**K=5 + N=10 的 query set 仅 10 人**，F1 计算粒度太粗（10 人中只要错 1 个 F1 就有 ±0.1 波动）。**per-task 数据的"完全相同"实际上是"都被 class imbalance 主导"，不是"模型等价"**。
+
+#### v6.1 修正后的结论
+
+| 结论 | 是否成立 |
+|---|:---:|
+| FOMAML 5-shot 在 CS1 跨 task 上 mean F1=0.77 | ✓（5/7 feasible tasks 加权平均） |
+| 模型在 task 2/3（较平衡）上 F1>0.88 | ✓（真实 FOMAML 证据） |
+| 模型在 task 0/1/6（极端不平衡）上"5-shot 适应" | ✗（**F1 是 class imbalance 的伪信号**） |
+| 7d 和 11d 模型在 FOMAML 下等价 | ⚠️（**数值相同但归因于 query set 太细 + class imbalance 主导，不是模型等价**） |
+| CS1 → CS2 跨课程泛化可行 | ❌（仍无 CS2 数据） |
+
+> v6.1 重要诚实声明：本节评估的所有"task 级 F1"是在 1 fold × 3 seeds 下得到的（v5 论文是 5 fold × 3 seeds 的聚合）。建议 v7 工作做完整 5 fold × 3 seeds × per_task 评估以加强证据强度——预计需 1-2 小时训练成本。
+
 ### 4.10 RF-7d 特征重要性
 
 ![Figure 9: RF-7d Feature Importance](plots/paper/fig9_feature_importance.png)

@@ -394,5 +394,161 @@
     "inner_steps": 3,
     "method": "FOMAML (first-order)"
   },
-  "elapsed_seconds": 3008.2853214740753
+  "elapsed_seconds": 3008.2853214740753,
+  "fewshot_fomaml_per_task": [
+    {
+      "task_id": 0,
+      "n_students": 131,
+      "feasible": true,
+      "seed": 42,
+      "f1": 1.0
+    },
+    {
+      "task_id": 1,
+      "n_students": 78,
+      "feasible": true,
+      "seed": 42,
+      "f1": 1.0
+    },
+    {
+      "task_id": 2,
+      "n_students": 24,
+      "feasible": true,
+      "seed": 42,
+      "f1": 0.8888888888888888
+    },
+    {
+      "task_id": 3,
+      "n_students": 55,
+      "feasible": true,
+      "seed": 42,
+      "f1": 0.9473684210526315
+    },
+    {
+      "task_id": 4,
+      "n_students": 14,
+      "feasible": false,
+      "seed": 42,
+      "f1": null
+    },
+    {
+      "task_id": 5,
+      "n_students": 9,
+      "feasible": false,
+      "seed": 42,
+      "f1": null
+    },
+    {
+      "task_id": 6,
+      "n_students": 162,
+      "feasible": true,
+      "seed": 42,
+      "f1": 0.0
+    },
+    {
+      "task_id": 0,
+      "n_students": 131,
+      "feasible": true,
+      "seed": 123,
+      "f1": 1.0
+    },
+    {
+      "task_id": 1,
+      "n_students": 78,
+      "feasible": true,
+      "seed": 123,
+      "f1": 1.0
+    },
+    {
+      "task_id": 2,
+      "n_students": 24,
+      "feasible": true,
+      "seed": 123,
+      "f1": 0.9473684210526315
+    },
+    {
+      "task_id": 3,
+      "n_students": 55,
+      "feasible": true,
+      "seed": 123,
+      "f1": 0.9473684210526315
+    },
+    {
+      "task_id": 4,
+      "n_students": 14,
+      "feasible": false,
+      "seed": 123,
+      "f1": null
+    },
+    {
+      "task_id": 5,
+      "n_students": 9,
+      "feasible": false,
+      "seed": 123,
+      "f1": null
+    },
+    {
+      "task_id": 6,
+      "n_students": 162,
+      "feasible": true,
+      "seed": 123,
+      "f1": 0.0
+    },
+    {
+      "task_id": 0,
+      "n_students": 131,
+      "feasible": true,
+      "seed": 777,
+      "f1": 1.0
+    },
+    {
+      "task_id": 1,
+      "n_students": 78,
+      "feasible": true,
+      "seed": 777,
+      "f1": 1.0
+    },
+    {
+      "task_id": 2,
+      "n_students": 24,
+      "feasible": true,
+      "seed": 777,
+      "f1": 0.8235294117647058
+    },
+    {
+      "task_id": 3,
+      "n_students": 55,
+      "feasible": true,
+      "seed": 777,
+      "f1": 1.0
+    },
+    {
+      "task_id": 4,
+      "n_students": 14,
+      "feasible": false,
+      "seed": 777,
+      "f1": null
+    },
+    {
+      "task_id": 5,
+      "n_students": 9,
+      "feasible": false,
+      "seed": 777,
+      "f1": null
+    },
+    {
+      "task_id": 6,
+      "n_students": 162,
+      "feasible": true,
+      "seed": 777,
+      "f1": 0.0
+    }
+  ],
+  "fewshot_fomaml_per_task_summary": {
+    "n_seeds": 3,
+    "n_feasible_tasks": 5,
+    "mean_f1": 0.770301570920766,
+    "std_f1": 0.38819044054947366,
+    "n_evaluations": 15
+  }
 }

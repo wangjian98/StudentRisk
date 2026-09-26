@@ -575,6 +575,56 @@ MetaMamba's PR-AUC is +0.23% above the best baseline (BiLSTM-46d).
 
 The large std (0.39) is because query set has only 10 students and tasks have imbalanced samples (parts 1-7 with 28-102 samples each).
 
+### 4.9.5 v6.1 Real Per-Task F1 Data (supplemented after v6 mini FOMAML validation ⚡)
+
+The v6 paper v5's claim "7d/11d F1 completely identical (0.7672514619883041)" was confirmed by v6 mini FOMAML validation as **real**—not an evaluation code bug, but two models genuinely producing the same result under the FOMAML evaluation protocol.
+
+#### Validation Protocol
+
+- Training: MetaMamba-7d / MetaMamba-11d each 1 fold × 1 seed (fold 0 / seed 42), other parameters same as v5
+- FOMAML: 3 seeds × 5 feasible tasks × K=5 / N=10 / inner_steps=3 / inner_lr=0.01
+- **Save per_task F1 array** (fixed v5 evaluation code's per_task data loss bug)
+
+#### Real Per-Task F1 Distribution (MetaMamba-7d and 11d completely identical)
+
+| task_id | part | n_stud | n_failed | n_passed | **per-task F1** | Note |
+|---:|:---:|---:|---:|---:|---:|:---|
+| 0 | part 1 | 131 | **130** | 1 | **1.0000 ± 0.0** | Extreme class imbalance (130/131 failed) |
+| 1 | part 2 | 78 | **76** | 2 | **1.0000 ± 0.0** | Extreme class imbalance (76/78 failed) |
+| 2 | part 3 | 24 | 20 | 4 | **0.8866 ± 0.05** | Relatively balanced |
+| 3 | part 4 | 55 | 45 | 10 | **0.9649 ± 0.02** | Relatively balanced |
+| 6 | part 7 | 162 | 28 | **134** | **0.0000 ± 0.0** ⬇ | Extreme class imbalance (134/162 passed) |
+| 4 | part 5 | 14 | — | — | — | ✗ n<15 skip |
+| 5 | part 6 | 9 | — | — | — | ✗ n<15 skip |
+
+**Mean F1 = 0.7703 ± 0.3882 (consistent with v5 reported 0.7673 ± 0.3858)**
+
+#### v6.1 New Findings (5 points)
+
+1. **Under 5-shot evaluation, F1 for 3 class-imbalance extreme tasks (0/1/6) is "fooled" by class imbalance**:
+   - **tasks 0/1 (nearly all failed)**: model "always predict failed" yields F1=1.0—but this is a "lazy strategy", not real generalization
+   - **task 6 (nearly all passed)**: model "always predict passed" yields F1=0.0—5-shot adaptation completely fails on this task
+
+2. **tasks 2 and 3 (relatively balanced, n=24 and n=55) achieve F1=0.89 and 0.96**—this is **real effective FOMAML evidence**. When class distribution within a task is relatively balanced, the model genuinely achieves 90%+ F1 in 5-shot.
+
+3. **mean F1=0.77 is "good tasks (2/3) + degenerate tasks (0/1/6) weighted average"**—v5/v6 paper's "5-shot mean F1=0.77" narrative is actually **bimodal**: 0/1/6 get pseudo F1 from class imbalance; 2/3 are real performance.
+
+4. **7d and 11d per_task F1 are completely identical**—consistent with v5 paper v5 (0.7672514619883041). This means MetaMamba-7d after FOMAML inner loop (inner_lr=0.01, 3 steps) reaches **prediction equivalence** with 11d—possibly because 5-shot data is too small to differentiate the two.
+
+5. **More likely reason for 7d/11d numerical identity**: **K=5 + N=10 query set only has 10 people**, F1 granularity too coarse (one wrong prediction among 10 causes F1 ±0.1 swing). **"Complete identity" in per_task data is actually "both dominated by class imbalance", not "model equivalence"**.
+
+#### v6.1 Revised Conclusions
+
+| Conclusion | Stands? |
+|---|:---:|
+| FOMAML 5-shot mean F1=0.77 across CS1 tasks | ✓ (5/7 feasible tasks weighted average) |
+| Model achieves F1>0.88 on balanced tasks (2/3) | ✓ (real FOMAML evidence) |
+| Model "5-shot adapts" on extreme-imbalance tasks (0/1/6) | ✗ (**F1 is class imbalance pseudo-signal**) |
+| 7d and 11d models equivalent under FOMAML | ⚠️ (**Numerical identity due to query set granularity + class imbalance dominance, not model equivalence**) |
+| CS1 → CS2 cross-curriculum generalization feasible | ❌ (still no CS2 data) |
+
+> v6.1 honesty statement: All "task-level F1" in this section is from 1 fold × 3 seeds (v5 paper aggregated from 5 folds × 3 seeds). v7 work should run full 5 folds × 3 seeds × per_task evaluation to strengthen evidence—estimated 1-2 hours of training cost.
+
 ### 4.10 RF-7d Feature Importance
 
 ![Figure 9: RF-7d Feature Importance](plots/paper/fig9_feature_importance.png)
