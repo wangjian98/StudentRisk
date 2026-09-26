@@ -743,6 +743,12 @@ To explore training batch size's effect on MetaMamba-7d, v6 performed a **3-conf
 
 ### 4.16 Sequence Length Sweep: max_len ∈ {128, 256, 512, 1024} (v6 NEW ⚡)
 
+![Figure 13: max_len Sweep](plots/paper/fig13_maxlen_sweep.png)
+
+> **Figure 13.** MetaMamba-7d sequence length sweep (5-fold × 3 seeds OOF). Left axis: Macro-F1 and F1(FAIL); Right axis: ROC-AUC; Auxiliary axis: training time. max_len=128 is optimal for Acc/F1; longer sequences only marginally lift ROC-AUC (+0.4%) at 8.2× training cost—**performance/compute ratio drops to 12%**.
+
+To explore event sequence truncation length's effect on MetaMamba-7d
+
 To explore event sequence truncation length's effect on MetaMamba-7d, v6 performed a **4-configuration sequence length sweep** on 7d full config. Training time per config shown in last column (single GPU, 5-fold × 3 seeds).
 
 | Config | max_len | Acc | Macro-F1 | F1(FAIL) | ROC-AUC | Training Time (s) |

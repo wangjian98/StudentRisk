@@ -733,6 +733,12 @@ FAILED 类（positive class）的 PR-AUC=0.9687，远高于其他基线。曲线
 
 ### 4.16 序列长度扫描：max_len ∈ {128, 256, 512, 1024}（v6 新增 ⚡）
 
+![Figure 13: max_len Sweep](plots/paper/fig13_maxlen_sweep.png)
+
+> **Figure 13.** MetaMamba-7d 序列长度扫描（5-fold × 3 seeds OOF）。左轴 Macro-F1 与 F1(FAIL)、右轴 ROC-AUC、辅助轴训练时间。max_len=128 在 Acc/F1 上最优，长序列仅让 ROC-AUC 微涨 +0.4%，训练时间却膨胀 8.2×——**性能/算力比跌至 12%**。
+
+为探索事件序列截断长度对 MetaMamba-7d 性能的影响
+
 为探索事件序列截断长度对 MetaMamba-7d 性能的影响，v6 在 7d full 配置上做了 **4 组序列长度扫描**。每组实验的训练时间见右列（基于单 GPU 跑 5-fold × 3 seeds）。
 
 | 配置 | max_len | Acc | Macro-F1 | F1(FAIL) | ROC-AUC | 训练时间 (s) |
