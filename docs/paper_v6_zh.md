@@ -687,6 +687,10 @@ FAILED 类（positive class）的 PR-AUC=0.9687，远高于其他基线。曲线
 
 ### 4.14 超参数扫描：LR × D_model（v6 新增 ⚡）
 
+![Figure 12: LR × D_model Sweep](plots/paper/fig12_lr_dmodel_sweep.png)
+
+> **Figure 12.** LR × D_model 扫描（5-fold × 3 seeds OOF）。**左**：Macro-F1 在 lr × d_model 网格上的热图，最佳格（红框 + 星号）集中在 d_model=128 列；**右**：每个配 7 组配置的 ROC-AUC 横向柱状（蓝=d=128、橙=d=64、绿=d=32），ROC 在 lr=3e-3/d=128 达到全局最高 0.9363。
+
 为系统化探索 MetaMamba-7d 的最优超参数配置，v6 在 v5 full 默认配置基础上做了 **7 组 LR × D_model 网格搜索**（其他参数固定：max_len=128、FiLM=True、TC=0.3）。所有实验均为 5-fold × 3 seeds OOF。
 
 ![Figure 12: LR × D_model Sweep](plots/paper/fig12_lr_dmodel_sweep.png)
@@ -711,6 +715,10 @@ FAILED 类（positive class）的 PR-AUC=0.9687，远高于其他基线。曲线
 4. **d_model=64 是性能悬崖**：所有 lr 下 Macro-F1 都跌至 0.870-0.873（vs d=128 的 0.876），证明 MetaMamba-7d 至少需要 d_model=128 才能完全发挥 S6 + FiLM 的协同效应。
 
 ### 4.15 批大小扫描：bs ∈ {8, 16, 32}（v6 新增 ⚡）
+
+![Figure 14: Batch Size Sweep](plots/paper/fig14_bs_sweep.png)
+
+> **Figure 14.** 批大小扫描（MetaMamba-7d + no_tc 配置，5-fold × 3 seeds OOF）。4 个指标分组柱状对比：bs=8 在 Acc/Macro-F1/F1(FAIL) 三项上最佳（金星），bs=32 仅在 ROC-AUC 上略胜一筹。**bs=8 + no_tc 是全模型系列最佳组合（Macro-F1=0.8801）**。
 
 为探索训练 batch size 对 MetaMamba-7d 性能的影响，v6 在 7d 序列上做了 **3 组批大小扫描**。
 

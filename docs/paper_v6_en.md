@@ -697,6 +697,10 @@ From RF-7d baseline (0.891) → simple 7-dim sequence models LSTM-7d/BiLSTM-7d/A
 
 ### 4.14 Hyperparameter Sweep: LR × D_model (v6 NEW ⚡)
 
+![Figure 12: LR × D_model Sweep](plots/paper/fig12_lr_dmodel_sweep.png)
+
+> **Figure 12.** LR × D_model sweep (5-fold × 3 seeds OOF). **Left**: Macro-F1 heatmap on the lr × d_model grid, with best cells (red border + asterisk) concentrated in the d_model=128 column; **Right**: ROC-AUC horizontal bar chart for 7 configurations (blue=d=128, orange=d=64, green=d=32), with global maximum 0.9363 at lr=3e-3/d=128.
+
 To systematically explore the optimal hyperparameter configuration for MetaMamba-7d, v6 performed a **7-configuration LR × D_model grid search** on top of v5's full default config (max_len=128, FiLM=True, TC=0.3). All experiments use 5-fold × 3 seeds OOF.
 
 ![Figure 12: LR × D_model Sweep](plots/paper/fig12_lr_dmodel_sweep.png)
@@ -721,6 +725,10 @@ To systematically explore the optimal hyperparameter configuration for MetaMamba
 4. **d_model=64 is a performance cliff**: At all lrs, Macro-F1 drops to 0.870-0.873 (vs d=128's 0.876), proving MetaMamba-7d needs at least d_model=128 to fully leverage the S6 + FiLM synergy.
 
 ### 4.15 Batch Size Sweep: bs ∈ {8, 16, 32} (v6 NEW ⚡)
+
+![Figure 14: Batch Size Sweep](plots/paper/fig14_bs_sweep.png)
+
+> **Figure 14.** Batch size sweep (MetaMamba-7d + no_tc config, 5-fold × 3 seeds OOF). Grouped bar comparison of 4 metrics: bs=8 wins Acc/Macro-F1/F1(FAIL) (gold star); bs=32 wins only ROC-AUC. **bs=8 + no_tc is the best combination across all model series (Macro-F1=0.8801)**.
 
 To explore training batch size's effect on MetaMamba-7d, v6 performed a **3-configuration batch size sweep** on 7-dim sequences.
 
