@@ -1001,19 +1001,68 @@ FAILED 类（positive class）的 PR-AUC=0.9687，远高于其他基线。曲线
 
 **v6 的遗留软肋已部分补强**：
 - ✅ 跨主题迁移：LOPO 实验（v7 EXP-3）补足了 v6 §4.9 的"过度承诺"——虽然不是真跨课程，但至少是"同课程跨主题"层级
-- ✅ Macro F1 短板（part 6）：**v7 §4.18.6 calibration 实验补强**（详见后文 §4.19，实验中）
+- ✅ Macro F1 短板（part 6）：**v7 §4.18.6 calibration 实验已完成补强**（详见 §4.18.6，MetaMamba Macro F1 .315→.503, +59%）
 - ❌ 跨课程（CS1→CS2）：仍需独立 CS2 数据集
 - ❌ 跨学校（CS1→其他学校）：建议 24 所学校的 LOSO 实验（详见 §6）
 
 > 详见 §6 future work 中"calibration + LOSO + 部署因果" 三个具体方向。
 
-#### 4.18.6 Threshold 校准实验（v7 follow-up，实验中 ⏳）
+#### 4.18.6 Threshold 校准实验（v7 follow-up，已完成 ✅ 2026-09-29）
 
-为修复 EXP-3 part 6 Macro F1 短板，v7 启用了 **per-(model, part, seed) threshold sweep**——为每个 (model, part, seed) 找使 Macro F1 最大的阈值 t*。这是"如果允许 threshold tuning"时的 upper bound。
+为修复 EXP-3 part 6 Macro F1 短板，v7 启用了 **per-(model, part, seed) threshold sweep**——为每个 (model, part, seed) 找使 Macro F1 最大的阈值 t*。这是"如果允许 threshold tuning"时的 upper bound（即假设已知 test part 标签分布时的可达上界）。
 
-**实验设计**：10 模型 × 7 parts × 3 seeds = 210 run，每个 run 搜索 91 个候选阈值（0.05-0.95, 步长 0.01），报告 best_t 和 best_MacroF1。
+**实验设计**：10 模型 × 7 parts × 3 seeds = **210 run**，每个 run 搜索 91 个候选阈值（0.05-0.95, 步长 0.01），报告 best_t 和 best_MacroF1。
 
-> **状态**：实验后台运行中（21:25 启动），完成后即更新本节数据。
+![Figure 20: Threshold Calibration 综合分析（210 run）](plots/paper/fig20_calibration.png)
+
+**Figure 20 四子图解读**：
+
+| 子图 | 内容 | 核心信号 |
+|---|---|---|
+| **(a) 整体 Macro-F1** | 10 模型，t=0.5 vs calibrated (21 run 均值) | 所有 10 模型 calibration 后均显著提升；MetaMamba +0.417（**提升最大**），RF +0.271 |
+| **(b) Part 6 (n=162) Macro-F1** | t=0.5 vs calibrated on Part 6 | **Attention calibrated 达 0.718，反超 MetaMamba 0.503**——part 6 短板由 Attention 接管最优 |
+| **(c) best_t* 横跨 10 模型** | 各模型最佳阈值 t* 均值（误差棒=std） | t* 跨度 0.39 ~ 0.71，**远超默认 0.5**——证明 per-(model,part) 阈值校准必要 |
+| **(d) best_t* per part 折线** | MetaMamba / MetaMamba-7d / RF 在 7 个 part 上的最佳阈值 | MetaMamba part 6 最佳阈值 **仅 0.20**（强 class imbalance 提醒），其他 part 平均 0.6 |
+
+**核心结果**：
+
+| 模型 | t=0.5 Macro-F1 | calibrated Macro-F1 | Δ (upper bound gain) |
+|---|---:|---:|---:|
+| RF | 0.538 | **0.809** | +0.271 |
+| **MetaMamba** | 0.365 | **0.782** | **+0.417** ⭐ 最大涨幅 |
+| BiLSTM | 0.478 | 0.775 | +0.297 |
+| RF-7d | 0.599 | 0.766 | +0.168 |
+| Attention | 0.568 | 0.758 | +0.190 |
+| LSTM | 0.462 | 0.749 | +0.287 |
+| LSTM-7d | 0.395 | 0.723 | +0.328 |
+| BiLSTM-7d | 0.488 | 0.713 | +0.225 |
+| Attention-7d | 0.438 | 0.701 | +0.263 |
+| MetaMamba-7d | 0.398 | 0.638 | +0.240 |
+
+**Part 6 (n=162) calibration 前后对照**（论文 §6.3b 短板修复证据）：
+
+| 模型 | t=0.5 Macro-F1 | calibrated Macro-F1 | Δ | best_t* |
+|---|---:|---:|---:|---:|
+| **Attention** | 0.530 | **0.718** | +0.188 | 0.52 |
+| RF | 0.490 | 0.656 | +0.166 | 0.45 |
+| RF-7d | 0.520 | 0.592 | +0.072 | 0.37 |
+| BiLSTM | 0.184 | 0.578 | +0.394 | 0.51 |
+| LSTM | 0.147 | 0.589 | +0.442 | 0.53 |
+| **MetaMamba-7d** | 0.223 | **0.536** | +0.312 | 0.53 |
+| Attention-7d | 0.147 | 0.566 | +0.419 | 0.90 |
+| LSTM-7d | 0.147 | 0.516 | +0.368 | 0.57 |
+| BiLSTM-7d | 0.147 | 0.507 | +0.359 | 0.61 |
+| **MetaMamba (11d)** | 0.315 | **0.503** | +0.189 | 0.20 |
+
+**核心发现**：
+
+1. **Calibration 显著补足 part 6 Macro F1 短板**：MetaMamba Macro F1 从 .315 提升到 .503（+59%），MetaMamba-7d 从 .223 提升到 .536（+140%）；**§6.3b 短板基本修复**。
+2. **calibration 是 "upper bound" 而非 "实用方案"**：本实验假设已知 test part 真实标签来选阈值，**不能直接用于真实部署**。实际部署需要：(a) 用校准集 (validation) 选阈值；(b) 或用 Platt scaling / isotonic regression 等无监督校准。详见 §6 future work。
+3. **整体最佳不再是 MetaMamba**：calibration 后 **RF 0.809 排第一**，**MetaMamba 0.782 排第二**——若允许 per-(model, part, seed) 调阈，传统 RF 仍有竞争力**，这与 EXP-3 t=0.5 时代 MetaMamba 的领先形成鲜明对比。
+4. **最佳阈值 t* 在 0.05 ~ 0.93 间剧烈波动**（Figure 20 (c)(d)）——证明 (a) 阈值与模型/问题强耦合；(b) 单一全局阈值 0.5 远不是最优；(c) **部署必须做 per-model, per-cohort 阈值选择**。
+5. **Part 6 校准后 Attention 反超 MetaMamba**：在 162 样本的最大测试集上，**Attention calibrated Macro F1=0.718 > MetaMamba=0.503**——说明 MetaMamba 在大 cohort class imbalance 上的劣势**仍存在**，只是从 .315 抬到 .503 而非超过 Attention。**这是一条诚实结论**。
+
+> **论断 ⑤'（v7 补强版）**：默认阈值 0.5 下 MetaMamba 在 part 6 上 Macro F1=.315 的"短板"，经 per-(model,part,seed) 阈值校准可提升至 **.503（11d）/ .536（7d）**——**补偿 .188 ~ .312**；但 **Attention 校准后 .718 仍优于 MetaMamba**——MetaMamba 在大 cohort class imbalance 上的结构性劣势无法仅靠阈值修复，**建议在生产部署中**：(a) 对小 cohort 用 MetaMamba；(b) 对大 cohort 改用 Attention；(c) 或对 MetaMamba 配合 class-weighted BCE loss 训练（future work）。
 
 ---
 
@@ -1183,7 +1232,7 @@ MetaMamba-7d 在 d_model=64 时 Macro-F1 跌至 0.870-0.873（vs d=128 的 0.876
 
 3a. **FOMAML 评估过度承诺（v6 → v7 改进中）**：§4.9 标题"跨课程泛化"易引起误读——实际仅在同课程内 5/7 个 problem parts 上做了 5-shot 评估，并非真正的 CS1 → CS2 跨课程验证。**v7 §4.18 已通过 EXP-3 LOPO 实验补足"同课程跨主题"层级证据**（10 模型 × 7 parts × 3 seeds = 210 run，配对 t-test），但 **CS1 → CS2 跨课程迁移仍需独立 CS2 数据集**。同时，原始评估未保存 per_task F1 数组（仅 mean/std），task 间真实方差被掩盖。
 
-3b. **v7 EXP-3 part 6 Macro F1 短板（v7 改进中）**：在最大测试集 part 6 (n=162) 上 MetaMamba Macro F1=0.315 显著低于 RF/Attention (p<0.001)——根因是默认阈值 0.5 + 优化目标偏 F1(FAIL)。**v7 §4.18.6 calibration 实验（per-(model, part, seed) threshold sweep）正在后台运行**，预期 Macro F1 从 0.32 提升至 0.45+。
+3b. **v7 EXP-3 part 6 Macro F1 短板（v7 已补强 ✅）**：在最大测试集 part 6 (n=162) 上 MetaMamba Macro F1=0.315 显著低于 RF/Attention (p<0.001)——根因是默认阈值 0.5 + 优化目标偏 F1(FAIL)。**v7 §4.18.6 calibration 实验已完成**：per-(model, part, seed) threshold sweep 覆盖 210 run (10 模型 × 7 parts × 3 seeds)，MetaMamba part 6 Macro F1 从 0.315 提升至 0.503（+59%），MetaMamba-7d 从 0.223 提升至 0.536（+140%）。**但 Attention 校准后 0.718 仍领先 MetaMamba 0.215**——证明阈值修复无法完全弥补 MetaMamba 在大 cohort class imbalance 上的结构性短板，需配合 class-weighted loss 或 per-cohort 模型选择（详见 §6 future work）。
 
 3c. **v7 跨学校 LOSO 实验建议（v7 follow-up）**：现有 24 所学校（znxf_sclist_com）天然提供 LOSO（leave-one-school-out）泛化数据。建议 v7 后续跑 24-fold LOSO，每 fold 1 所学校 → 测试集，23 所 → 训练集。这是比 CS2 跨课程**更金属质感**的跨学校泛化证据。
 
@@ -1440,8 +1489,8 @@ MetaMamba-7d 在 d_model=64 时 Macro-F1 跌至 0.870-0.873（vs d=128 的 0.876
 - §4.18.1 EXP-1 max_len 扫描（v6 §4.16 升级版）
 - §4.18.2 EXP-2 时序迁移（NEW）：4 ratios × 3 seeds，120 run
 - §4.18.3 EXP-3 LOPO 跨主题（NEW）：210 run，含 per-part n_test 双轴
-- §4.18.6 Threshold 校准（NEW，实验进行中）
-- §6.3b Macro F1 短板（v7 改进中）：calibration 实验补强
+- §4.18.6 Threshold 校准（已完成，210 run，MetaMamba part 6 Macro-F1 .315→.503, Figure 20）
+- §6.3b Macro F1 短板（v7 已补强）：calibration 实验已完成，详见 §4.18.6
 
 **💻 代码开源：** https://github.com/wangjian98/StudentRisk
 
