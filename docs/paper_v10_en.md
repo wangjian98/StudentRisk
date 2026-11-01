@@ -108,6 +108,15 @@ In educational data mining, a learner's *position relative to peers* is often mo
 | Output | One probability | One probability | **Per-stage hazards + cumulative risk + intervention timing + abstention** |
 | Main evaluation | Random stratified CV | Random stratified CV | **Student-grouped CV + part-prior baseline + LOPO + lead-time + calibration** |
 
+### 2.6 A published baseline on the same dataset: the EDM 2025 classifier comparison
+
+Murali et al. published the first systematic comparison of classifiers across several open-ended learning datasets at EDM 2025 [34], and one of their datasets **is the very CS1 MOOC IDE log used in this study** (their 469 students = our 473 minus the 4 students with only a single log row; their 159 passes / 310 failures = our 159 / 314). On that dataset they compared four classifiers and reported last-window accuracies of **HMM 76.97±1.42 > LSTM 71.51±2.05 > stratified dummy baseline 53.95±2.19 > FUMA (rule-based) 34.65±2.44**. This has two direct consequences for this paper:
+
+1. **A baseline gap.** This paper must include an HMM baseline. §6.2 reports it under our main protocol (stage-level, student-grouped, part-wise pooled AUC): **HMM (multinomial) 0.6671** and **HMM (Gaussian) 0.5879**, i.e. 0.2587 / 0.3379 below our RF baseline of 0.9258 (paired bootstrap $P(\Delta \le 0) = 100\%$).
+2. **Protocol differences explain the differing conclusions.** They use 60-second incremental windows (a student's different windows can span folds, a mild leakage channel) and accuracy; we use student-grouped cross-validation, part-wise pooled AUC and the stage-level task. §6.8 gives a like-for-like replication and item-by-item comparison.
+
+In addition, their **rule-based FUMA falls below the stratified random baseline on this dataset** (34.65 < 53.95), which is consistent with this paper's family of negative results (intensity-style features add nothing; raw sequences cannot support a standalone predictor) and therefore provides **external evidence** that hand-crafted statistics and rule mining do not suit CS1.
+
 ---
 
 ## 3 Dataset and Problem Formulation
@@ -294,7 +303,7 @@ Fusion must happen in **probability space**: probability-based fusion beats rank
 
 ### 5.3 Baselines
 
-Mandatory: the **part-prior trivial baseline** (student level 0.9135 / stage level 0.4164); RF-46d / RF-7d; LSTM / BiLSTM / Attention (7d); MetaMamba-11d and its four-way variants; and the three channels and fusion variants of CS1-SHR.
+Mandatory: the **part-prior trivial baseline** (student level 0.9135 / stage level 0.4164); RF-46d / RF-7d; LSTM / BiLSTM / Attention (7d); **HMM (multinomial and Gaussian — the model family reported at 0.7697 on this very dataset by EDM 2025)**; MetaMamba-11d and its four-way variants; and the three channels and fusion variants of CS1-SHR.
 
 ### 5.4 Reproducibility
 
@@ -321,6 +330,8 @@ Digit-identical, confirming that our scripts share the main protocol of the proj
 | CS1-SHR dropout channel (RF) | 0.9353 | **0.9258** | 0.9199 | 0.959 / 0.944 / 0.903 / 0.918 / 0.944 / 0.851 |
 | CS1-SHR dropout channel (HGB) | 0.9323 | 0.9191 | 0.9126 | 0.951 / 0.938 / 0.905 / 0.915 / 0.936 / 0.839 |
 | CS1-SHR + stage-wise shrinkage (κ=100) | 0.9390 | **0.9276** | 0.9222 | 0.959 / 0.947 / 0.900 / 0.920 / 0.936 / 0.871 |
+| HMM (multinomial, 7 event symbols) | 0.6768 | 0.6671 | 0.6527 | — |
+| HMM (Gaussian, seq9 continuous channels, no part identity) | 0.5870 | 0.5879 | 0.5800 | — |
 | MetaMamba, de-confounded sequence only | 0.8594 | 0.8758 | 0.8710 | 0.886 / 0.888 / 0.894 / 0.906 / 0.827 / 0.825 |
 | MetaMamba, de-confounded + context (residualised) | 0.7621 | 0.7643 | 0.7667 | 0.829 / 0.594 / 0.821 / 0.792 / 0.824 / 0.739 |
 | MetaMamba, de-confounded + context (not residualised; strongest arm) | 0.8526 | 0.8465 | 0.8427 | 0.919 / 0.752 / 0.869 / 0.850 / 0.873 / 0.793 |
@@ -409,6 +420,23 @@ Under the pre-registered acceptance criterion — the architecture must remain s
 
 Cumulative risk increases monotonically and **peaks at part 4** (n=250 still active), making **part 4 the most cost-effective intervention window**. No previous model produced this curve (MetaMamba yields a single probability), yet it is exactly the quantity needed for scheduling and tutoring decisions.
 
+### 6.8 Like-for-like comparison with the published EDM 2025 baseline
+
+| Protocol | Model | Metric | This paper | Murali et al. (2025) [34] |
+|---|---|---|---:|---:|
+| **Stage level (our main protocol)** | RF / CS1-SHR | part-wise pooled AUC | **0.9258** | — |
+| Stage level (our main protocol) | HMM (multinomial) | part-wise pooled AUC | 0.6671 (Δ −0.2587, P=100%) | — |
+| Stage level (our main protocol) | HMM (Gaussian) | part-wise pooled AUC | 0.5879 (Δ −0.3379, P=100%) | — |
+| Student level (8-fold, symbol HMM) | HMM | accuracy / AUC | 0.7294 / 0.7452 | **0.7697** / — |
+| Student level (8-fold) | majority-class baseline | accuracy | 0.6638 | 0.5395 (stratified dummy) |
+| Student level (8-fold) | LSTM | accuracy | — | 0.7151 |
+| Student level (8-fold) | FUMA (rule-based) | accuracy | — | 0.3465 (**below baseline**) |
+
+**Reading (three points).**
+1. A like-for-like replication of their recipe ("one HMM per class + prior, 8 folds") yields **0.7294**, confirming directionally that an HMM clearly beats the majority baseline, but roughly 4pp below their reported 0.7697. The declared deviations are: 473 students vs 469; 1-hour windows instead of 60-second ones (60-second windows over students spanning up to 1169 hours would produce tens of thousands of state points, making EM infeasible); and hmmlearn 0.3.x no longer ships a GMM-HMM, so we approximate it with a single-Gaussian emission (its n_mix=1 case) — which degenerates to the majority class on window features (accuracy 0.6638 = base rate).
+2. **The real difference is the protocol, not the implementation.** On the very same data, moving from "end-of-term failure + incremental windows + accuracy" to "stage-wise progression decision + student-grouped CV + part-wise pooled AUC" drops the HMM from 0.7294 to 0.6671 while lifting the feature-engineering baseline to 0.9258. **This is exactly the central claim of this paper: the task form and the evaluation protocol set the ceiling; architectural ranking is a secondary variable.**
+3. Their **rule-based FUMA falls below the stratified random baseline on this dataset** (34.65 vs 53.95), which aligns with this paper's negative results (M4 intensity features; full-trajectory multi-scale features at 0.9200, −0.0058) and supplies external evidence that hand-crafted statistics and rule mining do not suit CS1.
+
 ---
 
 ## 7 Analysis and Discussion
@@ -472,7 +500,7 @@ Accordingly, the proposed CS1-SHR is a model **matched to the structure of CS1**
 
 ## References
 
-> **Academic-integrity note.** The bibliography continues the two-round audit of v3.1/v3.2 (author verification, then verification by the co-supervisor against academic databases, removing six unverifiable entries) and adds three classical survival-analysis references (marked ⭐new; **please re-verify these three**). Errors are welcome via GitHub issues.
+> **Academic-integrity note.** The bibliography continues the two-round audit of v3.1/v3.2 (author verification, then verification by the co-supervisor against academic databases, removing six unverifiable entries) and adds four references: three classical survival-analysis works (Cox 1972, Fine & Gray 1999, Kalbfleisch & Prentice 2002) and one cross-dataset classifier comparison at EDM 2025 [34] (all marked ⭐new; **please re-verify these four**). Errors are welcome via GitHub issues.
 
 ### A. Learning analytics and educational data mining
 
@@ -555,6 +583,10 @@ Accordingly, the proposed CS1-SHR is a model **matched to the structure of CS1**
 [32] J. P. Fine, R. J. Gray. **A Proportional Hazards Model for the Subdistribution of a Competing Risk**. *Journal of the American Statistical Association*, 1999, 94(446): 496-509.
 
 [33] J. D. Kalbfleisch, R. L. Prentice. **The Statistical Analysis of Failure Time Data** (2nd ed.). *Wiley*, 2002.
+
+### I. Cross-dataset classifier comparison in educational data mining (⭐ new in this paper, please re-verify)
+
+[34] R. Murali, C. Conati, D. Poole. **A Comparison of Real-Time User Classification Methods using Interaction Data for Open-ended Learning**. *Proceedings of the 18th International Conference on Educational Data Mining (EDM 2025)*, Palermo, Italy, 2025, pp. 7-18. DOI: 10.5281/zenodo.15870205. ⭐ 2025 (**uses the same CS1 MOOC dataset as this paper**; reports HMM accuracy 0.7697 / LSTM 0.7151 / FUMA 0.3465 / stratified dummy 0.5395)
 
 ---
 
