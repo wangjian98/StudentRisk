@@ -1,0 +1,110 @@
+{
+  "f1_mono_back_ratio": 0.0,
+  "f3_pooled_within_part_auc": 0.7097547974413646,
+  "f3_rows": [
+    {
+      "part": 7,
+      "n": 162,
+      "pos": 28,
+      "fail_rate": 0.1728395061728395,
+      "within_part_auc": 0.7097547974413646
+    }
+  ],
+  "f4_part_peers": {
+    "1": 131,
+    "2": 78,
+    "3": 24,
+    "4": 55,
+    "5": 14,
+    "6": 9,
+    "7": 162
+  },
+  "label_dist_by_main_part": [
+    {
+      "main_part": 1,
+      "passed(0)": 1,
+      "failed(1)": 130,
+      "fail_rate": 0.9923664122137404
+    },
+    {
+      "main_part": 2,
+      "passed(0)": 2,
+      "failed(1)": 76,
+      "fail_rate": 0.9743589743589743
+    },
+    {
+      "main_part": 3,
+      "passed(0)": 4,
+      "failed(1)": 20,
+      "fail_rate": 0.8333333333333334
+    },
+    {
+      "main_part": 4,
+      "passed(0)": 10,
+      "failed(1)": 45,
+      "fail_rate": 0.8181818181818182
+    },
+    {
+      "main_part": 5,
+      "passed(0)": 3,
+      "failed(1)": 11,
+      "fail_rate": 0.7857142857142857
+    },
+    {
+      "main_part": 6,
+      "passed(0)": 5,
+      "failed(1)": 4,
+      "fail_rate": 0.4444444444444444
+    },
+    {
+      "main_part": 7,
+      "passed(0)": 134,
+      "failed(1)": 28,
+      "fail_rate": 0.1728395061728395
+    }
+  ],
+  "label_dist_by_max_part": [
+    {
+      "max_part": 1,
+      "passed(0)": 0,
+      "failed(1)": 83,
+      "fail_rate": 1.0
+    },
+    {
+      "max_part": 2,
+      "passed(0)": 0,
+      "failed(1)": 67,
+      "fail_rate": 1.0
+    },
+    {
+      "max_part": 3,
+      "passed(0)": 0,
+      "failed(1)": 31,
+      "fail_rate": 1.0
+    },
+    {
+      "max_part": 4,
+      "passed(0)": 1,
+      "failed(1)": 39,
+      "fail_rate": 0.975
+    },
+    {
+      "max_part": 5,
+      "passed(0)": 1,
+      "failed(1)": 14,
+      "fail_rate": 0.9333333333333333
+    },
+    {
+      "max_part": 6,
+      "passed(0)": 1,
+      "failed(1)": 21,
+      "fail_rate": 0.9545454545454546
+    },
+    {
+      "max_part": 7,
+      "passed(0)": 156,
+      "failed(1)": 59,
+      "fail_rate": 0.2744186046511628
+    }
+  ]
+}
