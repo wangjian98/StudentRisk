@@ -420,6 +420,29 @@ Under the pre-registered acceptance criterion — the architecture must remain s
 
 Cumulative risk increases monotonically and **peaks at part 4** (n=250 still active), making **part 4 the most cost-effective intervention window**. No previous model produced this curve (MetaMamba yields a single probability), yet it is exactly the quantity needed for scheduling and tutoring decisions.
 
+### 6.9 Decision-unit granularity: a negative result for exercise-level hazard
+
+We further pushed the decision unit from problem parts down to individual exercises (the logs carry exercise ids; each part holds 10-30 exercises, and 97.1% of students proceed in prefix order) to test whether finer granularity buys earlier warning. The answer is no, and the reason is methodological.
+
+| Task | Decision unit | Event share within the comparison cell | overall AUC | **Part-wise pooled** |
+|---|---|---|---:|---:|
+| **Part-level drop** (our backbone) | (student, part) | **6.0%-17.6%** | 0.9353 | **0.9258** |
+| **Exercise-level drop_at** (locating the stall exercise) | (student, part, exercise) | **0.58%** (258 events / 44,764 rows) | 0.4915 | **0.4920** |
+
+Early warning under the same label (will this student eventually stall), row-level part-wise pooled AUC:
+
+| Exercise level (first k exercises) | pooled | Part level (first K parts) | pooled |
+|---|---:|---|---:|
+| first 1 exercise | 0.5892 | **first 1 part** (~30 exercises of behaviour) | **0.7282** |
+| first 3 exercises | 0.6077 | first 2 parts | 0.7615 |
+| first 10 exercises | 0.6306 | first 3 parts | 0.7587 |
+| all exercises | 0.6485 | | |
+
+**Reading.**
+1. **Exercise-level hazard is below chance (0.492).** The cause is not weak features but the **event base rate within the comparison cell**: at part level the event covers 6-18% of the students in that part (learnable), whereas at exercise level it covers 0.58% of all exercise rows, leaving roughly one positive against 300 negatives in each (part, exercise) cell (not learnable). **The granularity of the decision unit must match the event base rate; cutting it finer does not automatically yield a better model, it turns a learnable problem into an unlearnable one.**
+2. **Finer granularity also does not buy earlier warning**: exercise-level prefix features are below part-level aggregate features at every cutoff (0.589-0.649 vs 0.728-0.762); matched by amount of observed behaviour, "first part" (~30 exercises) at 0.7282 far exceeds exercise-level "first 10 exercises" at 0.6306. This supports our choice of the part as the decision unit.
+3. **Exercise-level data nonetheless yields a new behavioural finding**: of the 258 stalling students, **81.8% stop in the middle of their final part** (completing a median of only 47.4% of that part's exercises; p25 26.7%), while only 18.2% finish the whole part; completers reach a median completion ratio of 1.000 in part 7. The mechanism of stalling is therefore **progressive attrition within a part**, not "finish a part and never start the next". The product implication is direct: **monitoring must happen inside a part, and "which exercise did they get stuck on" should be a diagnostic output rather than a prediction target** (§7.5).
+
 ### 6.8 Like-for-like comparison with the published EDM 2025 baseline
 
 | Protocol | Model | Metric | This paper | Murali et al. (2025) [34] |
@@ -455,6 +478,12 @@ Three testable reasons:
 1. **Sample size**: 473 students, 2171 rows, 258 events — the capacity of deep models (22k–70k parameters) far exceeds what the data support.
 2. **Much of the sequence information is redundant for this task**: 7-dimensional one-hot input lacks intensity information, and intensity-style features in turn give **no gain** at stage level (negative M4 result) — the information a sequence backbone mines from 128 raw steps is largely redundant for stage-level discrimination.
 3. **Highly unbalanced sequence lengths**: event counts span about four orders of magnitude on a log scale; after `max_len = 128` truncation most students' sequences are heavily zero-padded, so the backbone actually sees very uneven amounts of information.
+
+### 7.5 Stalling is progressive attrition within a part
+
+An exercise-level replay of the 258 stalling students shows that **81.8% stop in the middle of their final part** (completing a median of only 47.4% of that part's exercises), with only 18.2% finishing the part; per-part stall rates are 17.6% / 17.3% / 9.7% / 13.8% / 6.0% / 9.3%. This complements the two opposite failure profiles of §7.2: terminal-type learners are the **highest-intensity, most fragmented** ones, whereas dropout-type learners **drain away gradually inside a part**.
+
+Two implications: (i) **the product cannot wait for the end of a part** — more than three quarters of stalls are already observable within a part; (ii) **"which exercise did they get stuck on" should be a diagnostic output** (replaying the flagged learner's last exercises against peer timing/edit/run differences), not a prediction target, because exercise-level event localisation is not learnable on this data (§6.9).
 
 ### 7.4 Fuse in probability space, and with channels that err differently
 
