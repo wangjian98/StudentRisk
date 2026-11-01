@@ -268,6 +268,16 @@ where $q_{\text{drop}} = P(\text{fail}\mid\text{dropout})$ is estimated within t
 
 Fusion must happen in **probability space**: probability-based fusion beats rank averaging by **+0.010 / +0.020 / +0.020** AUC at $k = 1/2/3$. On top of this, the decision layer provides (i) per-stage calibration (Brier / LogLoss); (ii) an **abstention band** (low-confidence cases routed to human review); and (iii) the **intervention-timing curve** (§6.7).
 
+### 4.8 Intra-Part Stall Diagnostics (IPSD): exercises as observation resolution, not decision unit
+
+The negative result of §6.9 shows that exercise-level **event localisation** is not learnable (events cover 0.58% of (part, exercise) cells; pooled AUC 0.492, below chance). The same data also shows that **81.8% of stalls occur in the middle of a part** (median completion ratio of that part only 0.474). Together these yield a methodological proposition: **the granularity of the decision unit must match the event base rate, so finer granularity should serve observation and diagnosis rather than decision-making.**
+
+We therefore propose **IPSD (Intra-Part Stall Diagnostics)**, which pushes discrimination inside a part without changing the decision unit:
+
+1. **Truncation augmentation**: for each (student, part), truncate the evidence at the $e$-th exercise, recompute all part-level aggregate and peer-normalised features, and form (student, part, $e$) training samples whose **label remains the part-level drop**;
+2. **Intra-part monitoring**: at inference, use the evidence up to exercise $e$ to output "will this student stop within this part", yielding a risk curve and a first-crossing exercise index;
+3. **Stuck-point diagnosis**: for flagged learners, compare each of their exercises against same-part peers (time span, edits, runs, remove/insert ratio, focus-switch rate) to locate the likely stuck exercise and emit directly readable evidence.
+
 ### 4.7 Contrast with MetaMamba
 
 | Dimension | MetaMamba | CS1-SHR |
@@ -420,6 +430,20 @@ Under the pre-registered acceptance criterion — the architecture must remain s
 
 Cumulative risk increases monotonically and **peaks at part 4** (n=250 still active), making **part 4 the most cost-effective intervention window**. No previous model produced this curve (MetaMamba yields a single probability), yet it is exactly the quantity needed for scheduling and tutoring decisions.
 
+### 6.10 IPSD: pushing part-level discrimination inside the part (positive result)
+
+Same protocol (student-grouped 5-fold x 3 seeds, part-wise pooled AUC), comparing three ways of using the evidence:
+
+| Evidence used | first 1 exercise | 3rd exercise | 8th exercise | whole part |
+|---|---:|---:|---:|---:|
+| Pure exercise-prefix model (§6.9) | 0.5892 | 0.6077 | 0.6306 | 0.6485 |
+| **IPSD (truncation-augmented part-level features)** | **0.7915** | **0.7935** | **0.7979** | 0.9258 |
+
+**Reading.**
+1. **The first exercise alone already reaches a pooled AUC of 0.7915**, +0.20 over the pure exercise-prefix model. The reason is that IPSD preserves the expressive power of part-level features (peer normalisation, self-reference, completion ratio) and only changes *how much evidence has been seen*, whereas the pure prefix model dissolves the part-level structure into raw prefix counts.
+2. The decline for $e \ge 12$ is not model degradation but **selection of the evaluation population**: students who reach the 12th exercise have already had the early dropouts removed, and the remaining base rate falls from 0.119 to 0.074.
+3. **The intervention rule is directly deployable**: at truncation $e=3$ with a 0.5 threshold, precision 0.488 / recall 0.469 against a 0.106 base rate; restricting to the **top 5% riskiest** (student, part) pairs yields **precision 0.679, 6.4x the base rate** (top 10%: 0.495 / 4.7x; top 20%: 0.322 / 3.0x).
+
 ### 6.9 Decision-unit granularity: a negative result for exercise-level hazard
 
 We further pushed the decision unit from problem parts down to individual exercises (the logs carry exercise ids; each part holds 10-30 exercises, and 97.1% of students proceed in prefix order) to test whether finer granularity buys earlier warning. The answer is no, and the reason is methodological.
@@ -482,6 +506,8 @@ Three testable reasons:
 ### 7.5 Stalling is progressive attrition within a part
 
 An exercise-level replay of the 258 stalling students shows that **81.8% stop in the middle of their final part** (completing a median of only 47.4% of that part's exercises), with only 18.2% finishing the part; per-part stall rates are 17.6% / 17.3% / 9.7% / 13.8% / 6.0% / 9.3%. This complements the two opposite failure profiles of §7.2: terminal-type learners are the **highest-intensity, most fragmented** ones, whereas dropout-type learners **drain away gradually inside a part**.
+
+This implication is operationalised by IPSD (§6.10): within the **first 1-3 exercises of each part** the system produces a within-part risk (pooled 0.79), the riskiest 5% of (student, part) pairs reach **precision 0.679 (6.4x base rate)**, and a per-exercise peer comparison emits the likely stuck exercise together with its behavioural evidence.
 
 Two implications: (i) **the product cannot wait for the end of a part** — more than three quarters of stalls are already observable within a part; (ii) **"which exercise did they get stuck on" should be a diagnostic output** (replaying the flagged learner's last exercises against peer timing/edit/run differences), not a prediction target, because exercise-level event localisation is not learnable on this data (§6.9).
 
