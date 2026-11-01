@@ -36,7 +36,9 @@ def parse_table(lines):
 
 
 def main(md_path, out_path):
-    md = open(md_path, encoding='utf-8').read().split('\n')
+    raw = open(md_path, encoding='utf-8').read()
+    raw = ''.join(c for c in raw if ord(c) >= 32 or c in '\n\t')   # 去控制字符
+    md = raw.split('\n')
     doc = Document()
     st = doc.styles['Normal']
     st.font.name = 'Microsoft YaHei'

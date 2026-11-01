@@ -268,16 +268,6 @@ where $q_{\text{drop}} = P(\text{fail}\mid\text{dropout})$ is estimated within t
 
 Fusion must happen in **probability space**: probability-based fusion beats rank averaging by **+0.010 / +0.020 / +0.020** AUC at $k = 1/2/3$. On top of this, the decision layer provides (i) per-stage calibration (Brier / LogLoss); (ii) an **abstention band** (low-confidence cases routed to human review); and (iii) the **intervention-timing curve** (§6.7).
 
-### 4.8 Intra-Part Stall Diagnostics (IPSD): exercises as observation resolution, not decision unit
-
-The negative result of §6.9 shows that exercise-level **event localisation** is not learnable (events cover 0.58% of (part, exercise) cells; pooled AUC 0.492, below chance). The same data also shows that **81.8% of stalls occur in the middle of a part** (median completion ratio of that part only 0.474). Together these yield a methodological proposition: **the granularity of the decision unit must match the event base rate, so finer granularity should serve observation and diagnosis rather than decision-making.**
-
-We therefore propose **IPSD (Intra-Part Stall Diagnostics)**, which pushes discrimination inside a part without changing the decision unit:
-
-1. **Truncation augmentation**: for each (student, part), truncate the evidence at the $e$-th exercise, recompute all part-level aggregate and peer-normalised features, and form (student, part, $e$) training samples whose **label remains the part-level drop**;
-2. **Intra-part monitoring**: at inference, use the evidence up to exercise $e$ to output "will this student stop within this part", yielding a risk curve and a first-crossing exercise index;
-3. **Stuck-point diagnosis**: for flagged learners, compare each of their exercises against same-part peers (time span, edits, runs, remove/insert ratio, focus-switch rate) to locate the likely stuck exercise and emit directly readable evidence.
-
 ### 4.7 Contrast with MetaMamba
 
 | Dimension | MetaMamba | CS1-SHR |
@@ -290,6 +280,22 @@ We therefore propose **IPSD (Intra-Part Stall Diagnostics)**, which pushes discr
 | Output | One probability | Per-stage hazards + cumulative risk + intervention timing + interpretable hazard ratios |
 
 ---
+
+### 4.8 Intra-Part Stall Diagnostics (IPSD): exercises as observation resolution, not decision unit
+
+The negative result of §6.9 shows that exercise-level **event localisation** is not learnable (events cover 0.58% of (part, exercise) cells; pooled AUC 0.492, below chance). The same data also shows that **81.8% of stalls occur in the middle of a part** (median completion ratio of that part only 0.474). Together these yield a methodological proposition: **the granularity of the decision unit must match the event base rate, so finer granularity should serve observation and diagnosis rather than decision-making.**
+
+We therefore propose **IPSD (Intra-Part Stall Diagnostics)**, which pushes discrimination inside a part without changing the decision unit:
+
+1. **Truncation augmentation**: for each (student, part), truncate the evidence at the $e$-th exercise, recompute all part-level aggregate and peer-normalised features, and form (student, part, $e$) training samples whose **label remains the part-level drop**;
+2. **Intra-part monitoring**: at inference, use the evidence up to exercise $e$ to output "will this student stop within this part", yielding a risk curve and a first-crossing exercise index;
+3. **Stuck-point diagnosis**: for flagged learners, compare each of their exercises against same-part peers (time span, edits, runs, remove/insert ratio, focus-switch rate) to locate the likely stuck exercise and emit directly readable evidence.
+
+### 4.9 Re-designing the observation granularity inside a part: sittings and the explainability trio
+
+**Sitting-level truncation.** Exercise-level truncation (§4.8) refines observation to "the e-th exercise", but a real unit of effort usually spans **several exercises** (a median sitting in CS1 covers about 11 exercises). We therefore switch the truncation unit to a **sitting**: within a part, consecutive exercises separated by less than 30 minutes belong to the same sitting (approximated from exercise-level timestamps, so no re-scan of the raw log is needed). At truncation point $k$ we recompute all part-level aggregate and peer features, and inject the **session-structure prefix features** (number of sittings, per-sitting duration and event distributions, inter-sitting gaps; 14 dimensions) at sitting boundaries.
+
+**The explainability trio.** To make the model's conclusions directly usable by an instructor we add three components: (i) a **per-stage hazard-ratio table** — an L2-penalised logistic fitted separately within each part, $\exp(eta_j)$ giving the effect of a one-SD change in a behaviour on the odds of stalling *in that part*, so that "what the same behaviour means in part 1 versus part 4" becomes answerable; (ii) **stage-conditioned importance** — features are permuted *within* each part and re-predicted, with the drop in within-part AUC measuring that feature's contribution in that part, yielding a per-part "what drives stalling" ranking; (iii) **counterfactuals** — for a flagged learner we search the feature space for "which single feature, moved to what value, pushes the risk below a threshold", converting model judgements into executable interventions.
 
 ## 5 Experimental Setup
 
@@ -430,19 +436,24 @@ Under the pre-registered acceptance criterion — the architecture must remain s
 
 Cumulative risk increases monotonically and **peaks at part 4** (n=250 still active), making **part 4 the most cost-effective intervention window**. No previous model produced this curve (MetaMamba yields a single probability), yet it is exactly the quantity needed for scheduling and tutoring decisions.
 
-### 6.10 IPSD: pushing part-level discrimination inside the part (positive result)
+### 6.8 Like-for-like comparison with the published EDM 2025 baseline
 
-Same protocol (student-grouped 5-fold x 3 seeds, part-wise pooled AUC), comparing three ways of using the evidence:
+| Protocol | Model | Metric | This paper | Murali et al. (2025) [34] |
+|---|---|---|---:|---:|
+| **Stage level (our main protocol)** | RF / CS1-SHR | part-wise pooled AUC | **0.9258** | — |
+| Stage level (our main protocol) | HMM (multinomial) | part-wise pooled AUC | 0.6671 (Δ −0.2587, P=100%) | — |
+| Stage level (our main protocol) | HMM (Gaussian) | part-wise pooled AUC | 0.5879 (Δ −0.3379, P=100%) | — |
+| Student level (8-fold, symbol HMM) | HMM | accuracy / AUC | 0.7294 / 0.7452 | **0.7697** / — |
+| Student level (8-fold) | majority-class baseline | accuracy | 0.6638 | 0.5395 (stratified dummy) |
+| Student level (8-fold) | LSTM | accuracy | — | 0.7151 |
+| Student level (8-fold) | FUMA (rule-based) | accuracy | — | 0.3465 (**below baseline**) |
 
-| Evidence used | first 1 exercise | 3rd exercise | 8th exercise | whole part |
-|---|---:|---:|---:|---:|
-| Pure exercise-prefix model (§6.9) | 0.5892 | 0.6077 | 0.6306 | 0.6485 |
-| **IPSD (truncation-augmented part-level features)** | **0.7915** | **0.7935** | **0.7979** | 0.9258 |
+**Reading (three points).**
+1. A like-for-like replication of their recipe ("one HMM per class + prior, 8 folds") yields **0.7294**, confirming directionally that an HMM clearly beats the majority baseline, but roughly 4pp below their reported 0.7697. The declared deviations are: 473 students vs 469; 1-hour windows instead of 60-second ones (60-second windows over students spanning up to 1169 hours would produce tens of thousands of state points, making EM infeasible); and hmmlearn 0.3.x no longer ships a GMM-HMM, so we approximate it with a single-Gaussian emission (its n_mix=1 case) — which degenerates to the majority class on window features (accuracy 0.6638 = base rate).
+2. **The real difference is the protocol, not the implementation.** On the very same data, moving from "end-of-term failure + incremental windows + accuracy" to "stage-wise progression decision + student-grouped CV + part-wise pooled AUC" drops the HMM from 0.7294 to 0.6671 while lifting the feature-engineering baseline to 0.9258. **This is exactly the central claim of this paper: the task form and the evaluation protocol set the ceiling; architectural ranking is a secondary variable.**
+3. Their **rule-based FUMA falls below the stratified random baseline on this dataset** (34.65 vs 53.95), which aligns with this paper's negative results (M4 intensity features; full-trajectory multi-scale features at 0.9200, −0.0058) and supplies external evidence that hand-crafted statistics and rule mining do not suit CS1.
 
-**Reading.**
-1. **The first exercise alone already reaches a pooled AUC of 0.7915**, +0.20 over the pure exercise-prefix model. The reason is that IPSD preserves the expressive power of part-level features (peer normalisation, self-reference, completion ratio) and only changes *how much evidence has been seen*, whereas the pure prefix model dissolves the part-level structure into raw prefix counts.
-2. The decline for $e \ge 12$ is not model degradation but **selection of the evaluation population**: students who reach the 12th exercise have already had the early dropouts removed, and the remaining base rate falls from 0.119 to 0.074.
-3. **The intervention rule is directly deployable**: at truncation $e=3$ with a 0.5 threshold, precision 0.488 / recall 0.469 against a 0.106 base rate; restricting to the **top 5% riskiest** (student, part) pairs yields **precision 0.679, 6.4x the base rate** (top 10%: 0.495 / 4.7x; top 20%: 0.322 / 3.0x).
+---
 
 ### 6.9 Decision-unit granularity: a negative result for exercise-level hazard
 
@@ -467,24 +478,85 @@ Early warning under the same label (will this student eventually stall), row-lev
 2. **Finer granularity also does not buy earlier warning**: exercise-level prefix features are below part-level aggregate features at every cutoff (0.589-0.649 vs 0.728-0.762); matched by amount of observed behaviour, "first part" (~30 exercises) at 0.7282 far exceeds exercise-level "first 10 exercises" at 0.6306. This supports our choice of the part as the decision unit.
 3. **Exercise-level data nonetheless yields a new behavioural finding**: of the 258 stalling students, **81.8% stop in the middle of their final part** (completing a median of only 47.4% of that part's exercises; p25 26.7%), while only 18.2% finish the whole part; completers reach a median completion ratio of 1.000 in part 7. The mechanism of stalling is therefore **progressive attrition within a part**, not "finish a part and never start the next". The product implication is direct: **monitoring must happen inside a part, and "which exercise did they get stuck on" should be a diagnostic output rather than a prediction target** (§7.5).
 
-### 6.8 Like-for-like comparison with the published EDM 2025 baseline
+### 6.10 IPSD: pushing part-level discrimination inside the part (positive result)
 
-| Protocol | Model | Metric | This paper | Murali et al. (2025) [34] |
-|---|---|---|---:|---:|
-| **Stage level (our main protocol)** | RF / CS1-SHR | part-wise pooled AUC | **0.9258** | — |
-| Stage level (our main protocol) | HMM (multinomial) | part-wise pooled AUC | 0.6671 (Δ −0.2587, P=100%) | — |
-| Stage level (our main protocol) | HMM (Gaussian) | part-wise pooled AUC | 0.5879 (Δ −0.3379, P=100%) | — |
-| Student level (8-fold, symbol HMM) | HMM | accuracy / AUC | 0.7294 / 0.7452 | **0.7697** / — |
-| Student level (8-fold) | majority-class baseline | accuracy | 0.6638 | 0.5395 (stratified dummy) |
-| Student level (8-fold) | LSTM | accuracy | — | 0.7151 |
-| Student level (8-fold) | FUMA (rule-based) | accuracy | — | 0.3465 (**below baseline**) |
+Same protocol (student-grouped 5-fold x 3 seeds, part-wise pooled AUC), comparing three ways of using the evidence:
 
-**Reading (three points).**
-1. A like-for-like replication of their recipe ("one HMM per class + prior, 8 folds") yields **0.7294**, confirming directionally that an HMM clearly beats the majority baseline, but roughly 4pp below their reported 0.7697. The declared deviations are: 473 students vs 469; 1-hour windows instead of 60-second ones (60-second windows over students spanning up to 1169 hours would produce tens of thousands of state points, making EM infeasible); and hmmlearn 0.3.x no longer ships a GMM-HMM, so we approximate it with a single-Gaussian emission (its n_mix=1 case) — which degenerates to the majority class on window features (accuracy 0.6638 = base rate).
-2. **The real difference is the protocol, not the implementation.** On the very same data, moving from "end-of-term failure + incremental windows + accuracy" to "stage-wise progression decision + student-grouped CV + part-wise pooled AUC" drops the HMM from 0.7294 to 0.6671 while lifting the feature-engineering baseline to 0.9258. **This is exactly the central claim of this paper: the task form and the evaluation protocol set the ceiling; architectural ranking is a secondary variable.**
-3. Their **rule-based FUMA falls below the stratified random baseline on this dataset** (34.65 vs 53.95), which aligns with this paper's negative results (M4 intensity features; full-trajectory multi-scale features at 0.9200, −0.0058) and supplies external evidence that hand-crafted statistics and rule mining do not suit CS1.
+| Evidence used | first 1 exercise | 3rd exercise | 8th exercise | whole part |
+|---|---:|---:|---:|---:|
+| Pure exercise-prefix model (§6.9) | 0.5892 | 0.6077 | 0.6306 | 0.6485 |
+| **IPSD (truncation-augmented part-level features)** | **0.7915** | **0.7935** | **0.7979** | 0.9258 |
 
----
+**Reading.**
+1. **The first exercise alone already reaches a pooled AUC of 0.7915**, +0.20 over the pure exercise-prefix model. The reason is that IPSD preserves the expressive power of part-level features (peer normalisation, self-reference, completion ratio) and only changes *how much evidence has been seen*, whereas the pure prefix model dissolves the part-level structure into raw prefix counts.
+2. The decline for $e \ge 12$ is not model degradation but **selection of the evaluation population**: students who reach the 12th exercise have already had the early dropouts removed, and the remaining base rate falls from 0.119 to 0.074.
+3. **The intervention rule is directly deployable**: at truncation $e=3$ with a 0.5 threshold, precision 0.488 / recall 0.469 against a 0.106 base rate; restricting to the **top 5% riskiest** (student, part) pairs yields **precision 0.679, 6.4x the base rate** (top 10%: 0.495 / 4.7x; top 20%: 0.322 / 3.0x).
+
+### 6.11 Sitting-level truncation: pushing within-part discrimination further (positive result)
+
+| Truncation unit | (student, part) rows covered | **Part-wise pooled** |
+|---|---:|---:|
+| Exercise · first exercise | 2171 | 0.7915 |
+| Exercise · 3rd exercise | 2128 | 0.7935 |
+| **Sitting · first sitting** | 2171 | **0.8665** |
+| Sitting · 2nd sitting | 1054 | 0.7981 |
+| Sitting + 14-dim session structure · 1st sitting | 2171 | 0.8644 |
+| Whole part (baseline) | 2171 | 0.9258 |
+
+**Reading.**
+1. **Truncating at a sitting beats truncating at an exercise**: the first sitting reaches a pooled **0.8665**, +0.075 over the first exercise (0.7915). A median sitting covers about 11 exercises (44,764 exercises / 4,102 sittings), so even matched by amount of observed behaviour the sitting truncation remains ahead.
+2. **The session-structure features themselves add nothing** (0.8644 vs 0.8665), consistent with the earlier finding that adding the multiscale family to the stage-level feature set *hurts* (−0.0058): **the value of session structure lies in defining the truncation unit, not in providing features.** This unifies the earlier negative results on intensity features and multiscale features.
+3. From the second sitting onwards coverage collapses (1054 → 487 → 101 rows) and the metric falls, due to **selection of the evaluation population** (only persistent students remain), not model degradation.
+4. **Intervention rule** (first sitting, risk ≥ 0.5): 281 (student, part) pairs flagged, **precision 0.548 / recall 0.597** (base rate 0.119); restricting to the **riskiest 5%** (n=108) gives **precision 0.769 = 6.5x the base rate** (top 10% 0.631 / 5.3x; top 20% 0.433 / 3.6x), clearly above the exercise-level equivalent (0.488 / 0.469; top 5% 0.679 / 6.4x).
+
+### 6.12 Explainability results: one dominant signal that is stable across stages
+
+**Stage-conditioned importance** (permutation within each part) shows that **`peer_z_submit` (submission volume relative to peers) ranks first in all seven parts**, by an order of magnitude over the runner-up:
+
+| Part | Within-part baseline AUC | Top-1 feature | Importance | Top-2 feature | Importance |
+|---:|---:|---|---:|---|---:|
+| 1 | 0.959 | peer_z_submit | 0.1269 | peer_z_span_h | 0.0101 |
+| 2 | 0.944 | peer_z_submit | 0.0997 | rem_over_ins | 0.0074 |
+| 3 | 0.903 | peer_z_submit | 0.0598 | peer_z_span_h | 0.0129 |
+| 4 | 0.918 | peer_z_submit | 0.0882 | self_z_total | 0.0145 |
+| 5 | 0.944 | peer_z_submit | 0.0700 | peer_z_ins | 0.0110 |
+| 6 | 0.851 | peer_z_submit | 0.0573 | self_z_total | 0.0237 |
+
+The **per-stage hazard ratios** agree: `peer_z_submit` has HR < 1 in parts 1/2/4/5/6 (0.15-0.41), i.e. **submitting less than peers raises the odds of stalling**, while `rem_over_ins` (remove/insert ratio) reaches HR 2.5-2.7 in parts 2-3 and `peer_z_paste` reaches 2.2-5.2 in parts 4-5 — **the signature of being stuck differs by stage**.
+
+**Counterfactuals** turn this into intervention language (all examples are real students):
+
+| Student | Part | Original risk | Key change | New risk |
+|---|---:|---:|---|---:|
+| #27 | 3 | 0.974 | peer_z_submit from −5.000 (peer median 1.000) | 0.443 |
+| #30 | 4 | 0.990 | peer_z_submit from −5.000 → peer median | 0.442 |
+| #73 | 4 | 0.883 | peer_z_submit from −5.000 → peer median | 0.372 |
+| #90 | 1 | 0.998 | peer_z_submit from −5.000 → peer median | 0.433 |
+| #93 | 5 | 0.938 | peer_z_submit from −5.000 → peer median | 0.452 |
+
+**Reading.** In every example the **only feature that needs to change is relative submission volume**: raising it to the peer median drops the risk from 0.77-0.998 to 0.37-0.49. This is a statement **inside the model's behaviour space, not a causal claim**; it is nevertheless consistent with the behavioural profiles of §7.2 (dropout-type learners being the lowest-intensity, procrastinating ones) and with EDM 2025's mechanistic finding that an HMM on CS1 relies mainly on text insert/remove counts.
+
+### 6.13 Submission-quality validation: contamination exists but drives nothing
+
+"Clicking submit to farm progress" would contaminate the completion and submission feature families, which are the backbone of stage-level discrimination, so its extent must be quantified. Four rules are applied per (student, part, exercise): Q1 empty submission (a submit with insert < 5 and no run), Q2 submission farming (submit share of events > 0.5), Q3 instant submission (a submit with exercise span < 10 minutes), Q4 submission without running (a submit with no run anywhere in the part). Q4 fires on 54.5% and is too permissive (some exercises require no run), so it is reported for reference only; the primary contamination set is Q1/Q2/Q3.
+
+| Rule | (student, part) hits | Students |
+|---|---:|---:|
+| Q1 empty submission | 217 | 149 |
+| Q2 submission farming | 13 | 9 |
+| Q3 instant submission | 499 | 233 |
+| **Primary contamination set (Q1/Q2/Q3)** | **570 / 2171 (26.3%)** | **260** |
+| Q4 no-run submission (reference) | 1210 (54.5%) | 354 |
+
+**Impact** (all comparisons use the same test set, so population shifts cannot create spurious differences):
+
+| Assessment | Result |
+|---|---|
+| Discrimination (test set fixed to the 1601 clean rows) | trained on all rows pooled **0.9408** vs trained on clean rows **0.9356** → Δ = **−0.0052**: contamination does not harm discrimination |
+| Key behavioural finding ("stopping too early" risk ratio) | all rows: 0.225 vs 0.077, RR **0.34**; clean rows: 0.282 vs 0.090, RR **0.32** → **the conclusion is robust** |
+| Intervention list (sitting-level top 5%, n=108) | 10 contaminated pairs (9.3%), below the overall contamination rate of 26.3% → **the list is not contamination-driven** |
+
+→ **Contamination is real (a quarter of part-level rows) but harms neither discrimination, nor the behavioural conclusions, nor the intervention list.** All main results therefore stand; submission-quality flags should be treated as a data-cleaning prerequisite rather than a correction to the findings.
 
 ## 7 Analysis and Discussion
 
@@ -503,6 +575,12 @@ Three testable reasons:
 2. **Much of the sequence information is redundant for this task**: 7-dimensional one-hot input lacks intensity information, and intensity-style features in turn give **no gain** at stage level (negative M4 result) — the information a sequence backbone mines from 128 raw steps is largely redundant for stage-level discrimination.
 3. **Highly unbalanced sequence lengths**: event counts span about four orders of magnitude on a log scale; after `max_len = 128` truncation most students' sequences are heavily zero-padded, so the backbone actually sees very uneven amounts of information.
 
+### 7.4 Fuse in probability space, and with channels that err differently
+
+Probability-based fusion consistently beats rank averaging (+0.010 to +0.020), and a weak but differently-wired terminal channel contributes more to the fusion than a stronger all-student channel. The lesson is general: **when channels are strongly label-correlated, diversity in error patterns is worth more than marginal single-model strength.**
+
+---
+
 ### 7.5 Stalling is progressive attrition within a part
 
 An exercise-level replay of the 258 stalling students shows that **81.8% stop in the middle of their final part** (completing a median of only 47.4% of that part's exercises), with only 18.2% finishing the part; per-part stall rates are 17.6% / 17.3% / 9.7% / 13.8% / 6.0% / 9.3%. This complements the two opposite failure profiles of §7.2: terminal-type learners are the **highest-intensity, most fragmented** ones, whereas dropout-type learners **drain away gradually inside a part**.
@@ -511,11 +589,17 @@ This implication is operationalised by IPSD (§6.10): within the **first 1-3 exe
 
 Two implications: (i) **the product cannot wait for the end of a part** — more than three quarters of stalls are already observable within a part; (ii) **"which exercise did they get stuck on" should be a diagnostic output** (replaying the flagged learner's last exercises against peer timing/edit/run differences), not a prediction target, because exercise-level event localisation is not learnable on this data (§6.9).
 
-### 7.4 Fuse in probability space, and with channels that err differently
+### 7.6 From negative results to method: a reusable loop
 
-Probability-based fusion consistently beats rank averaging (+0.010 to +0.020), and a weak but differently-wired terminal channel contributes more to the fusion than a stronger all-student channel. The lesson is general: **when channels are strongly label-correlated, diversity in error patterns is worth more than marginal single-model strength.**
+Our findings can be organised as a loop, which is the paper's main methodological contribution over prior work:
 
----
+1. **Task form**: rewriting "end-of-term failure" as a "stage-wise progression decision" drops the part prior from 0.9135 to 0.4164 (below chance) and makes the first part sufficient for warning (0.9423);
+2. **Decision-unit granularity**: pushing the decision unit down to exercises drops the event base rate inside the comparison cell to 0.58%, turning a learnable problem into an unlearnable one (0.492, below chance) → the proposition: **the granularity of the decision unit must match the event base rate**;
+3. **Using granularity correctly**: applying fine granularity to **observation and diagnosis** rather than to decisions yields IPSD (truncation augmentation) and sitting-level truncation: within-part discrimination rises from "not decidable inside a part" to pooled **0.8665** at the first sitting, with top-5% intervention precision **0.769** (6.5x base rate);
+4. **Explainability and actionability**: the per-stage hazard ratios, stage-conditioned importance and counterfactuals converge on one signal — **submission volume relative to peers** — and yield statements of the form "raising it to the peer median moves the risk from 0.97 to 0.44", directly translatable into tutoring actions;
+5. **Data quality first**: submission-quality validation shows contamination of 26.3% that harms none of the conclusions → the results are robust, and cleaning rules are supplied.
+
+The methodological lesson is: **when a stronger model yields nothing, audit the task form, the decision-unit granularity and the evaluation protocol before adding model capacity; negative results should be used to map boundaries, not avoided.**
 
 ## 8 Limitations and Capability Boundaries
 
@@ -662,8 +746,8 @@ python3 analysis/hazard_model/run_combo.py       --data data/stage_dataset.npz -
 
 | Item | Description | Priority |
 |---|---|---|
-| Submission-quality validation | "Clicking exercise ids to farm submissions" contaminates the completion feature family | High |
-| External dataset validation | At least one public programming-behaviour dataset | High |
+| ~~Submission-quality validation~~ | ✅ done (§6.13): 26.3% contamination, harms neither discrimination, conclusions nor the list | ~~High~~ → closed |
+| External dataset validation | At least one public programming-behaviour dataset | **High (the only remaining high priority)** |
 | Calibration curves | ECE, reliability diagrams, per-part calibration | Medium |
 | Sequence-encoder ablation | Gain of a lightweight encoder used as a feature extractor | Medium |
 | Abstention band and intervention list | One-page product-facing output | Medium |
