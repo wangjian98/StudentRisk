@@ -1,0 +1,57 @@
+坐次总数 4102 | (生,段) 2171 | device=cuda
+
+=== 0) RF 基线复现（同协议）===
+  RF 坐下第1次  n=2171  pooled=0.8684 auc=0.8937 judged=0.8765 top5%=0.667
+  RF 坐下第2次  n=1054  pooled=0.7969 auc=0.8259 judged=0.7734 top5%=0.321
+  RF 坐下第3次  n=487   pooled=0.7829 auc=0.8617 judged=0.7145 top5%=0.120
+  RF 整段      n=2171  pooled=0.9228 auc=0.9283 judged=0.9229 top5%=0.833
+
+=== 1) token 序列 ===
+  序列数 2171  长度 中位 19 p90 30 max 30
+类别不平衡：正例 258 / 2171  → pos_weight=7.41
+
+=== 2) CS2-SPC · 观察前 1 次坐下 (n=2171) ===
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  base       pooled=0.7912 auc=0.8340 judged=0.7928 top5%=0.528 [214s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film       pooled=0.7840 auc=0.8295 judged=0.7881 top5%=0.528 [223s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  peer       pooled=0.7963 auc=0.8328 judged=0.7978 top5%=0.574 [296s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film_peer  pooled=0.7854 auc=0.8254 judged=0.7872 top5%=0.556 [306s]
+
+=== 2) CS2-SPC · 观察前 2 次坐下 (n=1054) ===
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  base       pooled=0.7063 auc=0.7437 judged=0.6361 top5%=0.245 [124s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film       pooled=0.7134 auc=0.7563 judged=0.6461 top5%=0.302 [116s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  peer       pooled=0.6932 auc=0.7454 judged=0.6282 top5%=0.264 [160s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film_peer  pooled=0.7018 auc=0.7544 judged=0.6441 top5%=0.340 [164s]
+
+=== 2) CS2-SPC · 观察前 全部坐次 (n=2171) ===
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  base       pooled=0.8901 auc=0.9044 judged=0.8852 top5%=0.787 [214s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film       pooled=0.8833 auc=0.9022 judged=0.8768 top5%=0.769 [222s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  peer       pooled=0.8876 auc=0.9045 judged=0.8818 top5%=0.824 [296s]
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_spc.py:265: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  film_peer  pooled=0.8922 auc=0.9088 judged=0.8863 top5%=0.769 [304s]
+
+完成，总耗时 2684s → results/cs2_spc

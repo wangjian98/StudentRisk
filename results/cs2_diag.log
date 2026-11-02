@@ -1,0 +1,17 @@
+含停点的 (生,段) = 201 | device=cuda
+
+=== 启发式基线（停点题排序）===
+  max_events         top1=0.259 top3=0.547 MRR=0.451
+  max_edits          top1=0.289 top3=0.542 MRR=0.465
+  max_focus_churn    top1=0.333 top3=0.527 MRR=0.474
+  max_paste          top1=0.204 top3=0.428 MRR=0.372
+  combo              top1=0.144 top3=0.338 MRR=0.314
+
+=== CS2-D 深度模型（段内 listwise 排序）===
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_diag.py:119: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+/home/ubuntu/studentrisk_stage/analysis/hazard_model/run_cs2_diag.py:119: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.enc = nn.TransformerEncoder(layer, nlayer)
+  CS2-D           top1=0.607 top3=0.806 MRR=0.722  (n=201)
+
+完成，总耗时 86s → results/cs2_diag
