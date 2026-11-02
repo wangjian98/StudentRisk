@@ -155,6 +155,11 @@ def main(args):
             use = [i for sit in (sids if k is None else sids[:k]) for i in sit]
             if len(use) == 0:
                 continue
+            if k is not None:
+                # 只保留"前 k 道题"口径下题数足够的段（与 trunc_tokens 一致）
+                n_ex_all = sum(len(sit) for sit in sids)
+                if n_ex_all < k:
+                    continue
             sub = np.array(use)
             cnt_ = raw_ex[sub, 1:8].sum(0)
             n = raw_ex[sub, 0].sum()
@@ -175,7 +180,7 @@ def main(args):
                 out[r] = (T[:k], is_end[:k], u[:k])
         return out
 
-    def deep_run(rows, RAWt, toks, cfg, tag):
+    def deep_run(rows, RAWt, tks, cfg, tag):
         part, lab = ds['part_ids'], y_stop
         pos = {int(r): i for i, r in enumerate(rows)}
         keys = sorted(pos.keys())
@@ -195,9 +200,9 @@ def main(args):
             pz = torch.from_numpy(Ctr[:, cs2.CTX_OFF + cs2.SUB_DIM].astype(np.float32)).to(dev)
             part_tr = torch.from_numpy(part[tr_rows]).to(dev)
 
-            Ttr = [toks[int(rows[i])][0] for i in it]
-            SEtr = [toks[int(rows[i])][1] for i in it]
-            Utr = [toks[int(rows[i])][2] for i in it]
+            Ttr = [tks[int(rows[i])][0] for i in it]
+            SEtr = [tks[int(rows[i])][1] for i in it]
+            Utr = [tks[int(rows[i])][2] for i in it]
             X, U, SE, PM = cs2.pad_batch(Ttr, [Ctr[i] for i in range(Ctr.shape[0])],
                                          Utr, SEtr, args.maxlen)
             X, U, SE, PM = [t.to(dev) for t in (X, U, SE, PM)]
@@ -229,9 +234,9 @@ def main(args):
                     sched.step()
                 models.append(m)
 
-            Tte = [toks[int(rows[i])][0] for i in ie]
-            SEte = [toks[int(rows[i])][1] for i in ie]
-            Ute = [toks[int(rows[i])][2] for i in ie]
+            Tte = [tks[int(rows[i])][0] for i in ie]
+            SEte = [tks[int(rows[i])][1] for i in ie]
+            Ute = [tks[int(rows[i])][2] for i in ie]
             Xt, Ut, SEt, PMt = cs2.pad_batch(Tte, [Cte[i] for i in range(Cte.shape[0])],
                                              Ute, SEte, args.maxlen)
             Xt, Ut, SEt, PMt = [t.to(dev) for t in (Xt, Ut, SEt, PMt)]
