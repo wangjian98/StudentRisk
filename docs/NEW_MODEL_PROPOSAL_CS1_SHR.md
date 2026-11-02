@@ -244,3 +244,11 @@ python3 analysis/hazard_model/run_early2.py      --data data/stage_dataset.npz -
 
 **数据**：`data/stage_dataset.npz`（2171 阶段样本 / 473 学生 / 258 掉队事件 / 7 part / 7 事件类型）
 **协议**：5 折按学生分组 + 课程级标签分层 × 3 seeds（42/123/777），OOF 概率取均值，主指标 = part 内 pooled AUC
+
+---
+
+> **2026-11-02 续**：本文档的 CS1-SHR 提案仍是阶段级主线模型；
+> 后续的**现有模型不足分析 + 新模型提案（CS2-SPC 判别线负结果 / CS2-FWD 新任务形式）**
+> 见 `NEW_MODEL_PROPOSAL_CS2_SPC_20261102.md`。
+> 一句话结论：CS1-SHR 之后**不要再靠加容量提判别力**（实测深度模型打不过 flat RF），
+> 增量只能来自**换任务形式（段内早警）与换输出形式（定位 + 拒答）**。
