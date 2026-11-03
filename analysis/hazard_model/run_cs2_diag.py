@@ -140,7 +140,45 @@ def main(args):
     raw_ex = ex['raw'].astype(np.float64)
     ex_sid, ex_par, ex_exr = ex['sid'], ex['part'], ex['exercise']
     dsp, dpart, ddrop = ds['sid'], ds['part_ids'], ds['drop']
-    folds = sc.group_folds(dsp, ds['final'], n_splits=5, seed=42)
+    # ---------- 评估口径（三选一）----------
+    #   cv          : 按学生分组 5 折（默认，主口径）
+    #   cross_part  : 跨段泛化 —— 早段(part1-4)训练→晚段(part5-6)测试，反向再来一次
+    #   lopo        : 留一 part（part1..6），跨段泛化的标准口径
+    if args.mode == 'cv':
+        folds = [(tr, te) for tr, te in
+                 sc.group_folds(dsp, ds['final'], n_splits=5, seed=42)]
+    elif args.mode == 'cross_part':
+        if args.holdout_parts:
+            ho = set(args.holdout_parts)
+            test = np.array([i for i in range(len(dpart)) if int(dpart[i]) in ho])
+            train = np.array([i for i in range(len(dpart)) if int(dpart[i]) not in ho])
+            folds = [(train, test)]
+        else:
+            early = np.where(dpart <= 4)[0]
+            late = np.where(dpart >= 5)[0]
+            folds = [(early, late), (late, early)]
+    elif args.mode == 'lopo':
+        folds = [(np.where(dpart != p)[0], np.where(dpart == p)[0])
+                 for p in range(1, 7)]
+    else:
+        raise ValueError(args.mode)
+    # 污染标记（提交质量校验结果）：--clean_train 时从**训练侧**剔除污染行
+    bad = None
+    if args.clean_train:
+        bad = np.load(args.quality, allow_pickle=True)['bad_mask'].astype(bool)
+        if args.clean_mode == 'random':
+            # 等样本量对照：随机剔除同样比例的训练行，用来区分
+            # "污染本身有害" 与 "训练样本变少有害"
+            rng = np.random.default_rng(20261104)
+            n_drop = int(bad.sum())
+            idx = rng.choice(len(bad), size=n_drop, replace=False)
+            bad = np.zeros(len(bad), dtype=bool)
+            bad[idx] = True
+            print(f'[口径] --clean_train --clean_mode random：随机剔除 {n_drop} 行'
+                  f'（等样本量对照）', flush=True)
+        else:
+            print(f'[口径] --clean_train：训练侧剔除污染行 {int(bad.sum())} / {len(bad)}',
+                  flush=True)
     part_key = {(int(dsp[i]), int(dpart[i])): i for i in range(len(dsp))}
     part_tot = {}
     for p in np.unique(ex_par):
@@ -188,17 +226,19 @@ def main(args):
 
     # ---------- 深度模型（listwise softmax）----------
     print('\n=== CS2-D 深度模型（段内 listwise 排序）===', flush=True)
-    seeds = [42, 123, 777]
+    seeds = list(args.seeds)
     hit1 = hit3 = 0
     rrs = []
     oof_scores = {}
-    for tr, te in folds:
-        tr_stall = [r for r in stall_rows if r in set(tr.tolist())]
+    per_split = []
+    for fi, (tr, te) in enumerate(folds):
+        tr_use = tr if bad is None else tr[~bad[tr]]
+        tr_stall = [r for r in stall_rows if r in set(tr_use.tolist())]
         te_stall = [r for r in stall_rows if r in set(te.tolist())]
         if len(tr_stall) < 20 or len(te_stall) == 0:
             continue
         # 训练折的 token 级同伴统计量
-        tr_stu = set(dsp[tr].tolist())
+        tr_stu = set(dsp[tr_use].tolist())
         tr_idx = [i for i in range(len(ex_sid)) if int(ex_sid[i]) in tr_stu]
         pstats = peer_token_stats(raw_ex, ex_par, ex_exr, tr_idx)
 
@@ -285,11 +325,17 @@ def main(args):
             pos = int(np.where(order == st)[0][0])
             rrs.append(1.0 / (pos + 1))
             oof_scores[r] = sc_.tolist()
+        per_split.append(dict(split=fi, n_test=len(te_stall),
+                              top1=hit1 / len(rrs), top3=hit3 / len(rrs),
+                              mrr=float(np.mean(rrs))))
 
     print(f'  CS2-D           top1={hit1/len(rrs):.3f} top3={hit3/len(rrs):.3f} '
           f'MRR={np.mean(rrs):.3f}  (n={len(rrs)})', flush=True)
     results['cs2_d'] = dict(top1=hit1 / len(rrs), top3=hit3 / len(rrs),
                             mrr=float(np.mean(rrs)), n=len(rrs))
+    results['mode'] = args.mode
+    results['clean_train'] = bool(args.clean_train)
+    results['per_split_cumulative'] = per_split
 
     with open(os.path.join(args.out, 'results.json'), 'w') as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
@@ -307,5 +353,15 @@ if __name__ == '__main__':
     ap.add_argument('--lr', type=float, default=1e-3)
     ap.add_argument('--bs', type=int, default=64)
     ap.add_argument('--pw', type=float, default=30.0)
+    ap.add_argument('--mode', default='cv', choices=['cv', 'cross_part', 'lopo'],
+                    help='评估口径：cv=按学生分组5折；cross_part=早段→晚段；lopo=留一part')
+    ap.add_argument('--clean_train', action='store_true',
+                    help='训练侧剔除提交质量污染行（数据清洗鲁棒性对照）')
+    ap.add_argument('--quality', default='results/quality/quality_flags.npz')
+    ap.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 777])
+    ap.add_argument('--clean_mode', default='flags', choices=['flags', 'random'],
+                    help='clean_train 的剔除方式：flags=按污染标记；random=等量随机对照')
+    ap.add_argument('--holdout_parts', type=int, nargs='*', default=None,
+                    help='cross_part 模式下指定留出的 part（如 5 6 = 早段训练→晚段测试）')
     args = ap.parse_args()
     main(args)
