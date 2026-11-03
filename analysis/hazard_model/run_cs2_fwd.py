@@ -122,6 +122,15 @@ def main(args):
     ds = sc.load_dataset(args.data)
     ds['base_ex'] = sc.base_exercises(ds['agg10'], ds['part_ids'])
     SELF = sc.self_ref(ds)
+    # --no_self：把 10 维自参照特征（SELF）置零 = 从上下文中**对称移除**。
+    # 理由：SELF 源自本人**此前各段**的完整聚合，段内早警口径下它等于"未来证据"，
+    #      会让段级 pooled AUC 与"预测最终是否掉队"重叠。
+    #      置零后这 10 维方差为 0 → RF 无法分裂（gain=0）、深度模型只多一个常数偏置，
+    #      等价于"该特征不存在"，且 RF 基线与深度模型**同样处理**，口径对称。
+    if args.no_self:
+        SELF = np.zeros_like(SELF)
+        print('[口径] --no_self：已移除 10 维自参照特征（RF 与深度模型对称处理）',
+              flush=True)
     ex = np.load(args.ex, allow_pickle=True)
     raw_ex = ex['raw'].astype(np.float64)
     ex_sid, ex_par, ex_exr = ex['sid'], ex['part'], ex['exercise']
@@ -298,5 +307,7 @@ if __name__ == '__main__':
     ap.add_argument('--lam', type=float, default=0.3)
     ap.add_argument('--lr', type=float, default=1e-3)
     ap.add_argument('--maxlen', type=int, default=64)
+    ap.add_argument('--no_self', action='store_true',
+                    help='移除 10 维自参照特征（SELF），得到纯净的段内早警口径')
     args = ap.parse_args()
     main(args)
