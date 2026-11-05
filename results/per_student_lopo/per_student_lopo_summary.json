@@ -1,0 +1,49 @@
+{
+  "experiment": "per_student_lopo_v2",
+  "design": "Per-Student Leave-One-Part-Out (王建 2026-10-11)",
+  "description": "验证 FiLM 训练后, 对同一学生未见过 partid 的识别能力",
+  "data_construction": "per-(student, part) sequence 重构 (每个学生每个做过的 part 一个序列)",
+  "n_target_students": 15,
+  "seeds": [
+    42
+  ],
+  "epochs": 20,
+  "film_settings": [
+    "ON",
+    "OFF"
+  ],
+  "elapsed_seconds": 1066.143711566925,
+  "n_records": 210,
+  "overall_by_film": [
+    {
+      "use_film": false,
+      "accuracy_mean": 0.4380952380952381,
+      "accuracy_std": 0.49853264540529213,
+      "macro_f1_mean": 0.4380952380952381,
+      "macro_f1_std": 0.49853264540529213,
+      "f1_passed_mean": 0.34285714285714286,
+      "f1_passed_std": 0.4769408008050134,
+      "f1_failed_mean": 0.09523809523809523,
+      "f1_failed_std": 0.29495141463694824,
+      "roc_auc_mean": NaN,
+      "roc_auc_std": NaN,
+      "pr_auc_mean": NaN,
+      "pr_auc_std": NaN
+    },
+    {
+      "use_film": true,
+      "accuracy_mean": 0.4,
+      "accuracy_std": 0.4922475924854202,
+      "macro_f1_mean": 0.4,
+      "macro_f1_std": 0.4922475924854202,
+      "f1_passed_mean": 0.23809523809523808,
+      "f1_passed_std": 0.4279604925109129,
+      "f1_failed_mean": 0.1619047619047619,
+      "f1_failed_std": 0.37013016223531015,
+      "roc_auc_mean": NaN,
+      "roc_auc_std": NaN,
+      "pr_auc_mean": NaN,
+      "pr_auc_std": NaN
+    }
+  ]
+}

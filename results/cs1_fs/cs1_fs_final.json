@@ -1,0 +1,52 @@
+{
+  "significance_rowwise": {
+    "all29|rf|K=8 vs 段内全标签RF": {
+      "pooled_fewshot": 0.8745,
+      "pooled_full": 0.9289,
+      "obs": -0.0544,
+      "ci": [
+        -0.0657,
+        -0.0428
+      ],
+      "p_le0": 1.0,
+      "n_rep": 12,
+      "n_parts": 6
+    },
+    "all29|rf|K=16 vs 段内全标签RF": {
+      "pooled_fewshot": 0.8964,
+      "pooled_full": 0.9289,
+      "obs": -0.0324,
+      "ci": [
+        -0.0456,
+        -0.0188
+      ],
+      "p_le0": 1.0,
+      "n_rep": 12,
+      "n_parts": 5
+    },
+    "peer10|logit|K=2 vs 段内全标签RF": {
+      "pooled_fewshot": 0.8215,
+      "pooled_full": 0.9289,
+      "obs": -0.1074,
+      "ci": [
+        -0.1363,
+        -0.0862
+      ],
+      "p_le0": 1.0,
+      "n_rep": 12,
+      "n_parts": 6
+    },
+    "peer_submit|logit|K=2 vs 段内全标签RF": {
+      "pooled_fewshot": 0.8559,
+      "pooled_full": 0.9289,
+      "obs": -0.073,
+      "ci": [
+        -0.0882,
+        -0.0615
+      ],
+      "p_le0": 1.0,
+      "n_rep": 12,
+      "n_parts": 6
+    }
+  }
+}
