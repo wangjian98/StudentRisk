@@ -69,6 +69,59 @@ def drop_stale():
             shutil.rmtree(d, ignore_errors=True)
 
 
+def patch_memo():
+    """把自动生成的表格/图回填到回应正文（docs/REVIEW_RESPONSE_20261107.md）。"""
+    memo_path = os.path.join(_ROOT, 'docs', 'REVIEW_RESPONSE_20261107.md')
+    exp_path = os.path.join(_ROOT, 'docs', 'REVISION_EXPERIMENTS_20261107.md')
+    if not (os.path.exists(memo_path) and os.path.exists(exp_path)):
+        print('[finalize] patch_memo: 文件缺失，跳过', flush=True)
+        return
+    # 始终从"未回填"的模板重建，保证可重复执行
+    tpl_path = os.path.join(_ROOT, 'docs', 'REVIEW_RESPONSE_20261107.template.md')
+    if os.path.exists(tpl_path):
+        shutil.copyfile(tpl_path, memo_path)
+    memo = open(memo_path, encoding='utf-8').read()
+    exp = open(exp_path, encoding='utf-8').read()
+
+    def grab(title):
+        import re
+        i = exp.find(title)
+        if i < 0:
+            return ''
+        j = exp.find('\n## ', i + 1)
+        block = exp[i: (j if j > 0 else len(exp))].strip()
+        # 降级标题层级，避免与回应正文的章节号冲突
+        block = re.sub(r'(?m)^## ', '### ', block)
+        # 去掉原章节号，避免与正文编号冲突
+        block = re.sub(r'(?m)^###\s+\d+\.\s*', '### ', block)
+        return block
+
+    parts = ['## 5. 早期预警曲线（身份臂）', '', grab('## 3. 早期预警前缀曲线（保留身份通道）'), '',
+             '## 6. 早期预警曲线（去混淆臂）', '', grab('## 4. 早期预警前缀曲线（去混淆）'), '',
+             '## 7. 显著性检验', '', grab('## 7. 显著性检验'), '',
+             '## 8. FiLM 消融（多 seed 复现）', '', grab('## 5. FiLM 消融（多 seed）'), '',
+             '## 9. LOPO 跨任务迁移', '', grab('## 6. LOPO 跨任务迁移'), '']
+    figs = []
+    fig_start = exp.find('## 8. 图')
+    if fig_start > 0:
+        import re
+        figs = exp[fig_start:].replace('## 8. 图', '### 附图', 1)
+        figs = re.sub(r'(?m)^## ', '### ', figs)
+    if figs:
+        parts += [figs]
+
+    start = memo.find('## 5–8. 待补')
+    end = memo.find('## 9. 对论文的处置清单')
+    if start < 0 or end < 0:
+        print('[finalize] patch_memo: 标记未找到，跳过', flush=True)
+        return
+    memo = memo[:start] + '\n'.join(parts) + '\n\n' + memo[end:]
+    memo = memo.replace('## 9. 对论文的处置清单', '## 10. 对论文的处置清单')
+    memo = memo.replace('## 10. 复现清单', '## 11. 复现清单')
+    open(memo_path, 'w', encoding='utf-8').write(memo)
+    print('[finalize] patch_memo: 已回填 §5–§9', flush=True)
+
+
 def headline():
     """输出紧凑摘要（供上层 agent 直接引用到飞书消息）。"""
     import glob
@@ -127,6 +180,11 @@ def main():
         headline()
     except Exception as e:
         print(f'[finalize] headline failed: {e}', flush=True)
+    print('[finalize] patch memo ...', flush=True)
+    try:
+        patch_memo()
+    except Exception as e:
+        print(f'[finalize] patch_memo failed: {e}', flush=True)
     print('[finalize] ALL DONE', flush=True)
 
 

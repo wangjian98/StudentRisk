@@ -79,7 +79,7 @@ def main():
         if only and cell not in only:
             continue
         arch = cell.split('_d')[0]
-        dim = int(cell.split('_d')[1])
+        dim = int(cell.split('_d')[1].split('_')[0])
         use_film = 'nofilm' not in cell
         out_dir = os.path.join(base, cell)
         if os.path.exists(os.path.join(out_dir, 'results.json')):
