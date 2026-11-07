@@ -1,0 +1,77 @@
+{
+  "arch": "hmm_gmm",
+  "dim": 28,
+  "hp": {
+    "n_states": 3,
+    "n_mix": 2
+  },
+  "hp_dev_score": null,
+  "prefix_frac": 0.1,
+  "max_len": 128,
+  "use_film": true,
+  "deconfound": false,
+  "n_folds": 15,
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "summary": {
+    "per_fold_mean": {
+      "macro_f1": 0.7823498533316536,
+      "macro_f1_std": 0.01876706252474143,
+      "accuracy": 0.7892870474057484,
+      "accuracy_std": 0.019380419831262215,
+      "balanced_accuracy": 0.8200370157023383,
+      "balanced_accuracy_std": 0.02098583009072433,
+      "roc_auc": 0.8430224867724868,
+      "roc_auc_std": 0.028047699500060596,
+      "f1_class_1": 0.820202441983047,
+      "f1_class_0": 0.7444972646802601
+    },
+    "per_seed": {
+      "42": {
+        "macro_f1": 0.7848388259456784,
+        "accuracy": 0.7907950727883538,
+        "balanced_accuracy": 0.8252544162826421,
+        "roc_auc": 0.8349118343573989,
+        "f1_class_1": 0.8200964327280118
+      },
+      "123": {
+        "macro_f1": 0.7777451433929989,
+        "accuracy": 0.7842777155655095,
+        "balanced_accuracy": 0.8172155017921148,
+        "roc_auc": 0.8463229646697388,
+        "f1_class_1": 0.81485750634049
+      },
+      "777": {
+        "macro_f1": 0.7844655906562831,
+        "accuracy": 0.7927883538633818,
+        "balanced_accuracy": 0.817641129032258,
+        "roc_auc": 0.8478326612903226,
+        "f1_class_1": 0.8256533868806392
+      }
+    },
+    "overall_oof": {
+      "accuracy": 0.7885835095137421,
+      "balanced_accuracy": 0.8205844650082121,
+      "macro_f1": 0.7821962720106093,
+      "f1_class_1": 0.8194945848375451,
+      "f1_class_0": 0.7448979591836735,
+      "mcc": 0.6058320904298738,
+      "n": 473,
+      "pos_rate_pred": 0.507399577167019,
+      "roc_auc": 0.8663321716139887,
+      "pr_auc": 0.9279205679629684,
+      "cm": {
+        "TN": 146,
+        "FP": 13,
+        "FN": 87,
+        "TP": 227
+      }
+    },
+    "n_folds": 15
+  },
+  "elapsed_s": 1272.0769684314728,
+  "protocol": "5fold x 3seed stratified-by-student; inner 15% val for early stop + HP"
+}

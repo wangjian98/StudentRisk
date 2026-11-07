@@ -1,0 +1,79 @@
+{
+  "arch": "lstm",
+  "dim": 28,
+  "hp": {
+    "hidden_dim": 64,
+    "num_layers": 1,
+    "dropout": 0.3,
+    "lr": 0.0003
+  },
+  "hp_dev_score": 0.8008891711654493,
+  "prefix_frac": 1.0,
+  "max_len": 128,
+  "use_film": true,
+  "deconfound": true,
+  "n_folds": 15,
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "summary": {
+    "per_fold_mean": {
+      "macro_f1": 0.81144297046947,
+      "macro_f1_std": 0.036351845376219154,
+      "accuracy": 0.8203359462486002,
+      "accuracy_std": 0.03381665020753405,
+      "balanced_accuracy": 0.842487519201229,
+      "balanced_accuracy_std": 0.041473717160043284,
+      "roc_auc": 0.8864620669056154,
+      "roc_auc_std": 0.027422085934360744,
+      "f1_class_1": 0.8508900863404978,
+      "f1_class_0": 0.7719958545984421
+    },
+    "per_seed": {
+      "42": {
+        "macro_f1": 0.8083190574237096,
+        "accuracy": 0.8161702127659574,
+        "balanced_accuracy": 0.841153033794163,
+        "roc_auc": 0.889042498719918,
+        "f1_class_1": 0.8449900872264642
+      },
+      "123": {
+        "macro_f1": 0.8010998877483437,
+        "accuracy": 0.8118701007838747,
+        "balanced_accuracy": 0.8307187660010239,
+        "roc_auc": 0.8793938812083972,
+        "f1_class_1": 0.8454423031120225
+      },
+      "777": {
+        "macro_f1": 0.8249099662363566,
+        "accuracy": 0.8329675251959685,
+        "balanced_accuracy": 0.8555907578084998,
+        "roc_auc": 0.8909498207885305,
+        "f1_class_1": 0.862237868683007
+      }
+    },
+    "overall_oof": {
+      "accuracy": 0.8308668076109936,
+      "balanced_accuracy": 0.8508793013660217,
+      "macro_f1": 0.8224474474474475,
+      "f1_class_1": 0.8611111111111112,
+      "f1_class_0": 0.7837837837837838,
+      "mcc": 0.6668977591824395,
+      "n": 473,
+      "pos_rate_pred": 0.5539112050739958,
+      "roc_auc": 0.8855706445539399,
+      "pr_auc": 0.9457384738684577,
+      "cm": {
+        "TN": 145,
+        "FP": 14,
+        "FN": 66,
+        "TP": 248
+      }
+    },
+    "n_folds": 15
+  },
+  "elapsed_s": 121.6193494796753,
+  "protocol": "5fold x 3seed stratified-by-student; inner 15% val for early stop + HP"
+}
