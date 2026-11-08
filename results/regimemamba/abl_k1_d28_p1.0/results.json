@@ -26,36 +26,36 @@
   ],
   "max_len": 128,
   "per_fold_mean": {
-    "macro_f1": 0.25157475315585553,
-    "accuracy": 0.33614781634938407,
-    "balanced_accuracy": 0.5,
-    "roc_auc": NaN,
-    "f1_class_1": 0.0,
-    "f1_class_0": 0.5031495063117111
+    "macro_f1": 0.8562727930307321,
+    "accuracy": 0.866815976110489,
+    "balanced_accuracy": 0.8722936934630483,
+    "roc_auc": 0.9334282727427888,
+    "f1_class_1": 0.8940731050669145,
+    "f1_class_0": 0.8184724809945503
   },
   "per_fold_std": {
-    "macro_f1": 0.0020163346500107512,
-    "roc_auc": NaN,
-    "balanced_accuracy": 0.0
+    "macro_f1": 0.027861039614329626,
+    "roc_auc": 0.02926212411229823,
+    "balanced_accuracy": 0.02336516288422125
   },
   "pooled_oof": {
-    "accuracy": 0.3361522198731501,
-    "balanced_accuracy": 0.5,
-    "macro_f1": 0.25158227848101267,
-    "f1_class_1": 0.0,
-    "f1_class_0": 0.5031645569620253,
-    "mcc": 0.0,
+    "accuracy": 0.8710359408033826,
+    "balanced_accuracy": 0.8780294836357809,
+    "macro_f1": 0.8611855494027029,
+    "f1_class_1": 0.8981636060100167,
+    "f1_class_0": 0.8242074927953891,
+    "mcc": 0.7298232595978884,
     "n": 473,
-    "pos_rate_pred": 0.0,
-    "roc_auc": NaN,
-    "pr_auc": NaN,
+    "pos_rate_pred": 0.6025369978858351,
+    "roc_auc": 0.9454192204462605,
+    "pr_auc": 0.9750971528005721,
     "cm": {
-      "TN": 159,
-      "FP": 0,
-      "FN": 314,
-      "TP": 0
+      "TN": 143,
+      "FP": 16,
+      "FN": 45,
+      "TP": 269
     }
   },
-  "elapsed_s": 56.39219045639038,
+  "elapsed_s": 2756.3171646595,
   "protocol": "5fold x 3seed stratified-by-student; inner 15% val; max_epochs=200; patience=20"
 }

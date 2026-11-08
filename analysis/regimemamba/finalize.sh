@@ -30,7 +30,7 @@ LEFT=$(grep -c '{{' docs/REGIMEMAMBA_PAPER_20261108_zh.md docs/REGIMEMAMBA_PAPER
 echo "placeholder_left: $LEFT" >> $LOG
 
 # 4) git 提交推送
-git add -A analysis/regimemamba analysis/fusion docs results/regimemamba results/rev12 2>>$LOG
+git add -A analysis/regimemamba analysis/fusion analysis/rev12 analysis/hazard_model docs results/regimemamba results/rev12 2>>$LOG
 git -c user.name="wangjian98" -c user.email="wangjian98@example.com" commit -m "docs(regimemamba): RegimeMamba 论文中英文定稿 + 实验报告 + 数据表（含 K=1 除零缺陷修复后的重跑、LOPO 跨任务迁移、regime 语义分析）" >> $LOG 2>&1
 COMMIT=$(git rev-parse --short HEAD)
 git push origin main >> $LOG 2>&1

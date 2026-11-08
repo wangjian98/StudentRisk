@@ -62,26 +62,46 @@ def load(path):
     return np.load(path).astype(np.float64) if os.path.exists(path) else None
 
 
+def _weight_grid(n, ws):
+    """生成 n 个非负权重（和为 1）的候选网格"""
+    if n == 2:
+        for w in ws:
+            yield (w, 1.0 - w)
+    elif n == 3:
+        for w in ws:
+            for w2 in ws:
+                w3 = 1.0 - w - w2
+                if w3 < -1e-9:
+                    continue
+                yield (w, w2, w3)
+    else:
+        raise ValueError(f'crossfit 仅支持 2 或 3 个模型，收到 {n}')
+
+
 def crossfit(preds, names, ws=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)):
-    """preds: dict name→向量；names: 参与融合的模型名（秩空间线性组合，权重和为1）"""
+    """preds: dict name→向量；names: 参与融合的模型名（秩空间线性组合，权重和为1）
+
+    支持 2 个模型（RF+RegimeMamba）与 3 个模型（RF+MetaMamba+RegimeMamba）两种情形。
+    """
     R = {k: rank(v) for k, v in preds.items()}
+    n = len(names)
+    grid = list(_weight_grid(n, ws))
     out = np.zeros(len(y)); chosen = []
     for seed in (42, 123, 777):
         fmap = folds_of(seed); fids = np.array([fmap[i] for i in range(len(y))])
         for f in range(5):
             tr = np.where(fids != f)[0]; va = np.where(fids == f)[0]
             best = (-1, None)
-            for w in ws:
-                for w2 in ws:
-                    if w + w2 > 1.0 + 1e-9:
-                        continue
-                    w3 = 1.0 - w - w2
-                    p = (w * R[names[0]] + w2 * R[names[1]] + w3 * R[names[2]])
-                    a = auc_fast(p[tr], y[tr])
-                    if a > best[0]:
-                        best = (a, (w, w2, w3))
-            w = best[1]; chosen.append(w)
-            out[va] = (w[0] * R[names[0]] + w[1] * R[names[1]] + w[2] * R[names[2]])[va]
+            for wts in grid:
+                p = sum(wt * R[nm] for wt, nm in zip(wts, names))
+                a = auc_fast(p[tr], y[tr])
+                if a > best[0]:
+                    best = (a, wts)
+            w = best[1]
+            if w is None:
+                raise RuntimeError(f'未能选出融合权重 (n={n})')
+            chosen.append(w)
+            out[va] = sum(wt * R[nm] for wt, nm in zip(w, names))[va]
     return out, chosen
 
 

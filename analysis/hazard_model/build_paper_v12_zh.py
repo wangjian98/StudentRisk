@@ -152,7 +152,10 @@ def build():
 
 {{'TABLE_LOPO'}}
 """
-    new_sections = new_sections.replace('{TABLE_FILM}', t_film).replace('{TABLE_LOPO}', t_lopo)
+    new_sections = (new_sections.replace("{'TABLE_FILM'}", t_film)
+                    .replace("{'TABLE_LOPO'}", t_lopo)
+                    .replace('{TABLE_FILM}', t_film)
+                    .replace('{TABLE_LOPO}', t_lopo))
     anchor = '\n## 7 分析与发现'
     assert anchor in s, 'anchor not found'
     s = s.replace(anchor, new_sections + anchor)

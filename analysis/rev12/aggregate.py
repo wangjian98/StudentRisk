@@ -185,7 +185,11 @@ def lopo_table(base):
     lines = ['| 模型 | 变体 | LOPO 加权 AUC | LOPO 加权 acc | LOPO 加权 bal-acc | 各 task 平均 AUC |',
              '|---|---|---:|---:|---:|---:|']
     for _, r in df.iterrows():
-        lines.append(f"| {ARCH_LABEL.get(r['arch'], r['arch'])}-{r['dim']}d | {r['variant']} | "
+        cell = str(r.get('cell', ''))
+        nofilm = 'nofilm' in cell
+        vlabel = 'no-FiLM' if nofilm else r['variant']
+        mlabel = f"{ARCH_LABEL.get(r['arch'], r['arch'])}-{r['dim']}d" + (' (no-FiLM)' if nofilm else '')
+        lines.append(f"| {mlabel} | {vlabel} | "
                      f"{r['auc_w']:.4f} | {r['acc_w']:.4f} | {r['bal_w']:.4f} | "
                      f"{r['auc_task_mean']:.4f} |")
     return df, '\n'.join(lines)

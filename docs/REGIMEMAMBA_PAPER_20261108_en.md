@@ -23,9 +23,9 @@
 
 **Method.** The architecture has four components: (1) a **behavioural regime forward filter** $r_t=\mathrm{softmax}(\log(r_{t-1}A)+g(x_t))$ whose emission network consumes behaviour only (never problem identity) and whose posterior is carried forward on padding steps; (2) **regime-conditioned selective SSM** parameters ($\Delta_t,B_t,C_t,A_t$ mixed by $r_{t,k}$) executed with a **single scan**, keeping compute on par with same-family models; (3) **regime direct features** (occupancy histogram, final posterior, switch rate) and a **per-regime risk bias**; (4) three regime-quality regularisers (anti-collapse occupancy entropy, switch sparsity, posterior sharpness). Evaluation reuses this project's published same-protocol baseline suite: 473 students, 28,588,309 IDE events, a 28-dimensional behaviour/context space that is strictly past-only, student-grouped 5-fold × 3-seed cross-validation, 15% inner validation for early stopping, and a **symmetric budget of 4 hyper-parameter candidates per architecture**.
 
-**Results.** (i) On the identity arm, RegimeMamba attains **pooled OOF AUC 0.9488**, significantly above the same-protocol MetaMamba (0.9056; Δ=+0.0431, 95% CI [+0.0235,+0.0648], P(Δ≤0)=0.000) and statistically tied with the tabular baseline RF (0.9509; Δ=−0.0021, P=0.622). However, under the **within-fold mean** caliber the same comparison is a tie (0.9368 vs 0.9334, Wilcoxon P=0.4887) — **the two AUC calibers yield opposite conclusions, which is itself one of this paper's main methodological findings.** (ii) **H2 fails**: after removing problem-identity channels RegimeMamba drops by 0.0538 (RF 0.0163, MetaMamba 0.0040), so part of the gain rests on identity memory. (iii) **H3 fails**: no advantage in the early-window (first 10% of events) setting (0.9265 vs MetaMamba 0.9298, ns), so no early-warning claim is warranted. (iv) {{K1_ABSTRACT}} (v) The learned regimes carry **interpretable behavioural semantics**: R2 is a "risk regime" (occupancy 0.268 for failing vs 0.207 for passing students, Mann-Whitney P<0.0001) whose occupancy alone discriminates failure at **AUC 0.6386**; R1 is a "good-state regime" (AUC 0.3783, i.e. reversed); and switch rate discriminates at AUC 0.3806 (reversed), correlating with behavioural **volume** (paste/run/submit counts, ρ≈0.22–0.28, P<0.0001) but not with rate-like measures — regime switching tracks activity shape, not efficiency.
+**Results.** (i) On the identity arm, RegimeMamba attains **pooled OOF AUC 0.9488**, significantly above the same-protocol MetaMamba (0.9056; Δ=+0.0431, 95% CI [+0.0235,+0.0648], P(Δ≤0)=0.000) and statistically tied with the tabular baseline RF (0.9509; Δ=−0.0021, P=0.622). However, under the **within-fold mean** caliber the same comparison is a tie (0.9368 vs 0.9334, Wilcoxon P=0.4887) — **the two AUC calibers yield opposite conclusions, which is itself one of this paper's main methodological findings.** (ii) **H2 fails**: after removing problem-identity channels RegimeMamba drops by 0.0538 (RF 0.0163, MetaMamba 0.0040), so part of the gain rests on identity memory. (iii) **H3 fails**: no advantage in the early-window (first 10% of events) setting (0.9265 vs MetaMamba 0.9298, ns), so no early-warning claim is warranted. (iv) **the capacity control does not support "the gain comes from the regime"**: after the divide-by-zero defect was fixed and the K=1 single-state control re-run, the control behaves normally again (pooled OOF AUC=0.9454), yet the pooled OOF gain of K=4 over K=1 is only +0.0032 [-0.0051,+0.0122] (P(Δ≤0)=0.237), which misses the preregistered criterion (Δ>0.005 and P≤0.10); H6 therefore fails and **this paper does not claim that the gain comes from regime structure rather than model capacity**. (v) The learned regimes carry **interpretable behavioural semantics**: R2 is a "risk regime" (occupancy 0.268 for failing vs 0.207 for passing students, Mann-Whitney P<0.0001) whose occupancy alone discriminates failure at **AUC 0.6386**; R1 is a "good-state regime" (AUC 0.3783, i.e. reversed); and switch rate discriminates at AUC 0.3806 (reversed), correlating with behavioural **volume** (paste/run/submit counts, ρ≈0.22–0.28, P<0.0001) but not with rate-like measures — regime switching tracks activity shape, not efficiency.
 
-**Conclusion.** On CS1, explicit behavioural regime switching **is** an effective structural inductive bias (it yields large gains by itself), but it **does not deliver discriminative power beyond tabular statistics**, and part of its gain comes from a problem-identity shortcut. The honest consequence is that RegimeMamba's **interpretability** (R2 occupancy as a directly displayable "duration in a risky state" indicator) is worth more than its accuracy. We position the model for **whole-cycle risk stratification and state explanation**, not early warning and not an accuracy race.
+**Conclusion.** On CS1, explicit behavioural regime switching is **not** shown to be an effective structural inductive bias in this paper (the gain over the K=1 single-state control is not significant; H6 fails), but it **does not deliver discriminative power beyond tabular statistics**, and part of its gain comes from a problem-identity shortcut. The honest consequence is that RegimeMamba's **interpretability** (R2 occupancy as a directly displayable "duration in a risky state" indicator) is worth more than its accuracy. We position the model for **whole-cycle risk stratification and state explanation**, not early warning and not an accuracy race.
 
 **Keywords**: learning analytics; selective state-space models; behavioural regimes; falsification studies; pre-registered evaluation; programming education; interpretability
 
@@ -61,7 +61,7 @@ One risk must be acknowledged in advance: **regimes may degenerate into proxies 
 
 1. **Method.** RegimeMamba composes a behavioural regime forward filter with regime-conditioned selective SSM dynamics, implemented with a **single scan** so that compute and tuning budgets stay symmetric with same-family models.
 2. **Methodology.** A **pre-registered falsification protocol** (H1–H6, thresholds fixed in advance including explicit failure conditions) and an explicit distinction between **two AUC calibers** (within-fold mean vs pooled OOF), reported side by side.
-3. **Empirical findings.** Regime structure is effective (large gap to the K=1 control), but part of the gain depends on identity, and the regimes carry **interpretable risk semantics** (R2 occupancy alone: AUC 0.6386).
+3. **Empirical findings.** the gain of regime structure over K=1 is not significant (H6 fails), and it partly relies on identity, part of the gain depends on identity, and the regimes carry **interpretable risk semantics** (R2 occupancy alone: AUC 0.6386).
 4. **Negative results.** A direct answer to "is state-space switching worth modelling on CS1": **worth it for explanation, not worth it for an accuracy race**.
 
 ---
@@ -247,12 +247,12 @@ Mechanism: pooled OOF AUC requires scores from **different fold models to be mut
 | Main cell K=4 (direct features + anti-collapse reg.) | 0.9488 | 0.9368 | — | — |
 | No regime direct features (E6) | 0.9520 | 0.9344 | +0.0012 [−0.0130,+0.0144] | 0.419 |
 | No occupancy-entropy reg. (E7) | 0.9480 | 0.9342 | −0.0027 [−0.0175,+0.0106] | 0.646 |
-| **K=1 single-state control (E5)** | {{K1_POOLED}} | {{K1_FOLD}} | {{K1_DELTA}} [{{K1_CI}}] | {{K1_P}} |
+| **K=1 single-state control (E5)** | 0.9454 | 0.9334 | +0.0032 [-0.0051,+0.0122] | 0.237 |
 
 Reading:
 - Removing the **direct features** costs essentially nothing (+0.0012, ns) → information flows mainly through the **regime-conditioned SSM dynamics**, not through explicit occupancy features (which also explains why E6 is marginally higher).
 - Removing the **occupancy-entropy regulariser** costs essentially nothing (−0.0027, ns) → no regime collapse occurs with 28-d inputs; $\lambda_u$ is insurance.
-- The **K=1 control** is the key piece of evidence in this section: {{K1_VERDICT}}
+- The **K=1 control** is the key piece of evidence in this section: The pooled OOF gain of K=4 over the K=1 single-state control is +0.0032 [-0.0051,+0.0122], P(Δ<=0)=0.237, which misses the preregistered criterion (Δ>0.005 and P≤0.10) -> **H6 fails**: a gain driven by model capacity rather than regime structure cannot be ruled out. (reference: MetaMamba - K=1 = -0.0399 [-0.0622,-0.0194], P=1.000)
 
 ### 6.4 Deconfounded arm (H2 fails)
 
@@ -287,10 +287,10 @@ Leave-one-problem-part-out (LOPO): train on students whose main part differs, te
 | MetaMamba-28d (default) | 0.6169 | 0.6145 |
 | MetaMamba-28d (no-FiLM) | 0.6814 | 0.6212 |
 | RF-28d | 0.6123 | 0.6396 |
-| **RegimeMamba-28d (default)** | {{LOPO_DEFAULT}} | {{LOPO_BAL_DEFAULT}} |
-| **RegimeMamba-28d (deconfounded)** | {{LOPO_DECONF}} | {{LOPO_BAL_DECONF}} |
+| **RegimeMamba-28d (default)** | 0.6073 | 0.5850 |
+| **RegimeMamba-28d (deconfounded)** | 0.6195 | 0.6322 |
 
-{{LOPO_VERDICT}}
+RegimeMamba attains a weighted LOPO AUC of 0.6073, below the preregistered threshold 0.6169 -> H5 fails; the deconfounded arm scores 0.6195.
 
 ### 6.7 Regime semantics and interpretability (H4)
 
@@ -336,8 +336,8 @@ Switching tracks **behavioural volume**, not efficiency — consistent with §6.
 | H2 not an identity shortcut | deconfounded drop ≤0.020 | drop 0.0538 | ❌ fail (gain partly identity-driven) |
 | H3 early warning | first 10% ≥ MetaMamba at first 10% | Δ=−0.0033, ns | ❌ fail |
 | H4 regimes are real | occupancy≥5% / \|ρ\|≥0.3 / one regime associated with failure | min occupancy 0.240; max ρ +0.281 (P<0.0001, **below the 0.30 threshold**); R2 occupancy associated with failure (P<0.0001) | ⚠️ partial pass |
-| H5 cross-task generalisation | LOPO ≥ 0.6169 | {{LOPO_H5}} | {{LOPO_VERDICT_SHORT}} |
-| H6 not a capacity artefact | K=4 clearly better than K=1 | {{K1_H6}} | {{K1_VERDICT_SHORT}} |
+| H5 cross-task generalisation | LOPO ≥ 0.6169 | 0.6073 < 0.6169 | ❌ fails |
+| H6 not a capacity artefact | K=4 clearly better than K=1 | Δ=+0.0032 [-0.0051,+0.0122], P=0.237 | ❌ fails (gain does not significantly exceed K=1) |
 
 > H4-ii's threshold |ρ|≥0.30 was not met (maximum +0.281; at n=473 this is still a strong correlation). Following pre-registration discipline we **do not relax the threshold afterwards** and instead record "partial pass", interpreting it in §7.3.
 
@@ -345,9 +345,9 @@ Switching tracks **behavioural volume**, not efficiency — consistent with §6.
 
 ## 7 Findings and Discussion
 
-### 7.1 Finding 1: regime structure is an effective inductive bias, but "effective" depends on the caliber
+### 7.1 Finding 1: the gain of regime structure over the single-state control is not significant, so it is not shown to be an effective inductive bias
 
-The comparison between the single-state control (K=1) and K=4 is the core evidence in this paper about where the gain comes from: {{K1_VERDICT_DETAIL}} Under the same parameter budget, data and training loop, **letting a state-space model own several explicit behavioural states and switch among them is a structural inductive bias with real payoff**. At the same time this payoff shrinks markedly under the **within-fold mean** caliber (RegimeMamba 0.9368 vs MetaMamba 0.9334, Wilcoxon P=0.4887): the K=4 advantage is largely about **global cross-fold comparability** rather than within-fold ranking quality.
+The comparison between the single-state control (K=1) and K=4 is the core evidence in this paper about where the gain comes from: After the divide-by-zero fix, the K=1 single-state control behaves normally again (pooled OOF AUC=0.9454), while the pooled OOF gain of K=4 over K=1 is only +0.0032 [-0.0051,+0.0122] (P(Δ<=0)=0.237), missing the preregistered criterion (Δ>0.005 and P≤0.10) -> H6 fails. (reference: MetaMamba - K=1 = -0.0399 [-0.0622,-0.0194], P=1.000) This paper therefore **does not claim** that "letting a state-space model own several explicit behavioural states and switch among them" brings a substantial gain: under the same parameter budget, data and training loop, the pooled OOF gain of K=4 over K=1 is only +0.0032 (P(Δ≤0)=0.237), so a gain driven by model capacity cannot be ruled out. At the same time, K=4 and the same-protocol MetaMamba do not differ significantly under the **within-fold mean** caliber (0.9368 vs 0.9334, Wilcoxon P=0.4887) — **the value of the regime structure lies in interpretability rather than in accuracy**.
 
 ### 7.2 Finding 2: the gain decomposes into identity memory plus regime structure — and the identity part is not negligible
 
@@ -371,7 +371,7 @@ Switch rate discriminates failure at AUC 0.3806 (reversed). Intuitively "frequen
 |---|---|---|
 | Task form | stage-level "will they keep progressing?" (survival/hazard) | student-level "will they fail by term end?" |
 | Primary metric | within-part pooled AUC (0.9258) | student-level pooled OOF AUC (0.9488) |
-| Main claim | task formulation and evaluation caliber matter more than architecture | regime structure helps, but does not surpass tabular statistics and partly relies on identity |
+| Main claim | task formulation and evaluation caliber matter more than architecture | the gain of regime structure over K=1 is not significant (H6 fails); it does not surpass tabular statistics and partly relies on identity |
 | Product positioning | "who is about to stop progressing" (intervention timing curve) | whole-cycle risk stratification plus an interpretable state indicator (R2 occupancy) |
 | Mergeability | the two share one cache, protocol and baseline suite | could become the "strongest deep-model control + interpretability" section of the mainline paper |
 
@@ -389,7 +389,7 @@ Earlier fusion experiments in this project found that fusion weights drift with 
 
 1. **No accuracy leadership.** RegimeMamba is statistically tied with the tabular RF baseline and trails it by 0.0398 once deconfounded.
 2. **No early-warning claim.** No advantage over same-protocol MetaMamba in the first-10% setting (H3 fails).
-3. **No cross-task generalisation advantage.** {{LOPO_BOUNDARY}}
+3. **No cross-task generalisation advantage.** The weighted LOPO AUC is 0.6073, below the same-protocol MetaMamba (0.6169) -> no cross-task generalisation claim is made.
 4. **No generalisation beyond CS1.** Single dataset, single course; no external-dataset validation.
 5. **No claim that regime semantics are fully explained.** R2/R1 currently correspond to behaviour only statistically; no manual coding validation has been performed.
 
@@ -407,7 +407,7 @@ Earlier fusion experiments in this project found that fusion weights drift with 
 
 On CS1 — many events, few students — this paper tests the "behavioural regime switching" structural hypothesis under a **pre-registered falsification protocol**, and obtains a mixed set of results:
 
-1. **Structurally effective.** Allowing a selective SSM to own several behavioural states and switch among them yields a substantial gain over a single-state control (§6.3).
+1. **No claim of structural effectiveness.** Whether letting a selective SSM own several behavioural states and switch among them yields a substantial gain is not supported in this run (the K=4 vs K=1 gain is not significant; H6 fails, §6.3).
 2. **Not an accuracy lead.** It ties the tabular baseline and trails it after deconfounding; it is **not** a new accuracy reference point.
 3. **Partly identity-driven.** The deconfounded drop of 0.0538 exceeds the pre-registered threshold → **H2 fails**.
 4. **No early warning.** No advantage in the first-10% setting → **H3 fails**.
