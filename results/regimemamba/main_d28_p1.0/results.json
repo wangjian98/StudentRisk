@@ -1,0 +1,61 @@
+{
+  "tag": "main_d28_p1.0",
+  "arch": "regimemamba",
+  "dim": 28,
+  "prefix": 1.0,
+  "deconfound": false,
+  "n_regime": 4,
+  "use_film": true,
+  "use_direct": true,
+  "lam_usage": 0.05,
+  "lam_switch": 0.01,
+  "lam_sharp": 0.01,
+  "hp": {
+    "d_model": 64,
+    "d_state": 16,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "lr": 0.001
+  },
+  "hp_dev_score": 0.7946282345234196,
+  "n_folds": 15,
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "max_len": 128,
+  "per_fold_mean": {
+    "macro_f1": 0.8567728528118688,
+    "accuracy": 0.8675625233296006,
+    "balanced_accuracy": 0.8728643966547193,
+    "roc_auc": 0.9367943548387097,
+    "f1_class_1": 0.8952301970351967,
+    "f1_class_0": 0.818315508588541
+  },
+  "per_fold_std": {
+    "macro_f1": 0.027817261436253127,
+    "roc_auc": 0.027754604384290286,
+    "balanced_accuracy": 0.02894928388092118
+  },
+  "pooled_oof": {
+    "accuracy": 0.8752642706131079,
+    "balanced_accuracy": 0.8827664944117294,
+    "macro_f1": 0.8657368428649093,
+    "f1_class_1": 0.9015025041736227,
+    "f1_class_0": 0.829971181556196,
+    "mcc": 0.7389685268188543,
+    "n": 473,
+    "pos_rate_pred": 0.6025369978858351,
+    "roc_auc": 0.9487641709730401,
+    "pr_auc": 0.9770659292252776,
+    "cm": {
+      "TN": 144,
+      "FP": 15,
+      "FN": 44,
+      "TP": 270
+    }
+  },
+  "elapsed_s": 3902.511796474457,
+  "protocol": "5fold x 3seed stratified-by-student; inner 15% val; max_epochs=200; patience=20"
+}

@@ -1,0 +1,7 @@
+self-implemented Gaussian HMM (n_mix=1): loglik=-10676.362 (1.2s)
+score_loglik(first 20 events) = -68.059
+hmmlearn GaussianHMM (best of 5 seeds): total loglik = -30352.804
+ours >= hmmlearn best? True
+posterior check: pipeline=0.000000 manual=0.000000 diff=0.00e+00
+synthetic AUC = 1.0
+n_mix=2 loglik=-10660.320 (>= n_mix=1? True)

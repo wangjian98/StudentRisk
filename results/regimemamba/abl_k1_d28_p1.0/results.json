@@ -1,0 +1,61 @@
+{
+  "tag": "abl_k1_d28_p1.0",
+  "arch": "regimemamba",
+  "dim": 28,
+  "prefix": 1.0,
+  "deconfound": false,
+  "n_regime": 1,
+  "use_film": true,
+  "use_direct": true,
+  "lam_usage": 0.05,
+  "lam_switch": 0.01,
+  "lam_sharp": 0.01,
+  "hp": {
+    "d_model": 64,
+    "d_state": 16,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "lr": 0.001
+  },
+  "hp_dev_score": null,
+  "n_folds": 15,
+  "seeds": [
+    42,
+    123,
+    777
+  ],
+  "max_len": 128,
+  "per_fold_mean": {
+    "macro_f1": 0.25157475315585553,
+    "accuracy": 0.33614781634938407,
+    "balanced_accuracy": 0.5,
+    "roc_auc": NaN,
+    "f1_class_1": 0.0,
+    "f1_class_0": 0.5031495063117111
+  },
+  "per_fold_std": {
+    "macro_f1": 0.0020163346500107512,
+    "roc_auc": NaN,
+    "balanced_accuracy": 0.0
+  },
+  "pooled_oof": {
+    "accuracy": 0.3361522198731501,
+    "balanced_accuracy": 0.5,
+    "macro_f1": 0.25158227848101267,
+    "f1_class_1": 0.0,
+    "f1_class_0": 0.5031645569620253,
+    "mcc": 0.0,
+    "n": 473,
+    "pos_rate_pred": 0.0,
+    "roc_auc": NaN,
+    "pr_auc": NaN,
+    "cm": {
+      "TN": 159,
+      "FP": 0,
+      "FN": 314,
+      "TP": 0
+    }
+  },
+  "elapsed_s": 56.39219045639038,
+  "protocol": "5fold x 3seed stratified-by-student; inner 15% val; max_epochs=200; patience=20"
+}
