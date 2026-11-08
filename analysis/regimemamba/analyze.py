@@ -327,7 +327,7 @@ def main():
                 continue
             w.writerow(['baseline', label, '', '', '', '', '', '', '', auc_fast(base[key]),
                         '', '', '', '', '', '', '', ''])
-    P(f'[analyze] 写出 {data_csv}')
+    print(f'[analyze] 写出 {data_csv}', flush=True)
 
     # ── regime 语义 CSV ──
     reg_csv = os.path.join(_ROOT, 'docs', 'REGIMEMAMBA_REGIME_STATS_20261108.csv')
@@ -357,7 +357,7 @@ def main():
                     continue
                 rho, p = spearmanr(switch, col)
                 w.writerow(['switch_corr', nm, f'rho={rho:+.4f};p={p:.6g}'])
-        P(f'[analyze] 写出 {reg_csv}')
+        print(f'[analyze] 写出 {reg_csv}', flush=True)
 
     with open(OUT_MD, 'w') as f:
         f.write('\n'.join(lines) + '\n')

@@ -84,5 +84,3 @@
 | H3 早期预警 | p10% AUC ≥ MetaMamba p10% | Δ=-0.0033 [-0.0145,+0.0086] | 判负 |
 | H6 容量混淆 | K=4 明显优于 K=1 | Δ=+0.0032 [-0.0051,+0.0122], P=0.237 | 不通过（增益可能来自容量） |
 
-[analyze] 写出 /home/ubuntu/SR_rev12/docs/REGIMEMAMBA_DATA_20261108.csv
-[analyze] 写出 /home/ubuntu/SR_rev12/docs/REGIMEMAMBA_REGIME_STATS_20261108.csv
