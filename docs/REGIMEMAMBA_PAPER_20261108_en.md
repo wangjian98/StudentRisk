@@ -11,7 +11,7 @@
 
 **Version note**: This is a standalone manuscript (the RegimeMamba experimental line), running in parallel with this project's mainline manuscript on stage-level hazard modelling (CS1-SHR / CS1-FSP); see §7.6 for how the two relate and how they should be positioned.
 
-**Code and data**: `StudentRisk/analysis/regimemamba/` (model / experiment / analysis scripts), `StudentRisk/results/regimemamba/` (per-cell raw results), `StudentRisk/docs/REGIMEMAMBA_{DESIGN,RESULTS,DATA}_20261108.*` (design memo / experiment report / data tables).
+**Code and data**: `StudentRisk/analysis/regimemamba/` (model / experiment / analysis scripts), `StudentRisk/results/regimemamba/` (per-cell raw results), `StudentRisk/docs/REGIMEMAMBA_{DESIGN,RESULTS,DATA}_20261108.*` (design memo / experiment report / data tables); the stratified and matched analysis of §6.8 is `StudentRisk/analysis/regimemamba/stratified_analysis.py` with outputs in `StudentRisk/docs/REGIMEMAMBA_STRATIFIED_20261110.{md,csv}`.
 
 ---
 
@@ -23,9 +23,9 @@
 
 **Method.** The architecture has four components: (1) a **behavioural regime forward filter** $r_t=\mathrm{softmax}(\log(r_{t-1}A)+g(x_t))$ whose emission network consumes behaviour only (never problem identity) and whose posterior is carried forward on padding steps; (2) **regime-conditioned selective SSM** parameters ($\Delta_t,B_t,C_t,A_t$ mixed by $r_{t,k}$) executed with a **single scan**, keeping compute on par with same-family models; (3) **regime direct features** (occupancy histogram, final posterior, switch rate) and a **per-regime risk bias**; (4) three regime-quality regularisers (anti-collapse occupancy entropy, switch sparsity, posterior sharpness). Evaluation reuses this project's published same-protocol baseline suite: 473 students, 28,588,309 IDE events, a 28-dimensional behaviour/context space that is strictly past-only, student-grouped 5-fold × 3-seed cross-validation, 15% inner validation for early stopping, and a **symmetric budget of 4 hyper-parameter candidates per architecture**.
 
-**Results.** (i) On the identity arm, RegimeMamba attains **pooled OOF AUC 0.9488**, significantly above the same-protocol MetaMamba (0.9056; Δ=+0.0431, 95% CI [+0.0235,+0.0648], P(Δ≤0)=0.000) and statistically tied with the tabular baseline RF (0.9509; Δ=−0.0021, P=0.622). However, under the **within-fold mean** caliber the same comparison is a tie (0.9368 vs 0.9334, Wilcoxon P=0.4887) — **the two AUC calibers yield opposite conclusions, which is itself one of this paper's main methodological findings.** (ii) **H2 fails**: after removing problem-identity channels RegimeMamba drops by 0.0538 (RF 0.0163, MetaMamba 0.0040), so part of the gain rests on identity memory. (iii) **H3 fails**: no advantage in the early-window (first 10% of events) setting (0.9265 vs MetaMamba 0.9298, ns), so no early-warning claim is warranted. (iv) **the capacity control does not support "the gain comes from the regime"**: after the divide-by-zero defect was fixed and the K=1 single-state control re-run, the control behaves normally again (pooled OOF AUC=0.9454), yet the pooled OOF gain of K=4 over K=1 is only +0.0032 [-0.0051,+0.0122] (P(Δ≤0)=0.237), which misses the preregistered criterion (Δ>0.005 and P≤0.10); H6 therefore fails and **this paper does not claim that the gain comes from regime structure rather than model capacity**. (v) The learned regimes carry **interpretable behavioural semantics**: R2 is a "risk regime" (occupancy 0.268 for failing vs 0.207 for passing students, Mann-Whitney P<0.0001) whose occupancy alone discriminates failure at **AUC 0.6386**; R1 is a "good-state regime" (AUC 0.3783, i.e. reversed); and switch rate discriminates at AUC 0.3806 (reversed), correlating with behavioural **volume** (paste/run/submit counts, ρ≈0.22–0.28, P<0.0001) but not with rate-like measures — regime switching tracks activity shape, not efficiency.
+**Results.** (i) On the identity arm, RegimeMamba attains **pooled OOF AUC 0.9488**, significantly above the same-protocol MetaMamba (0.9056; Δ=+0.0431, 95% CI [+0.0235,+0.0648], P(Δ≤0)=0.000) and statistically tied with the tabular baseline RF (0.9509; Δ=−0.0021, P=0.622). However, under the **within-fold mean** caliber the same comparison is a tie (0.9368 vs 0.9334, Wilcoxon P=0.4887) — **the two AUC calibers yield opposite conclusions, which is itself one of this paper's main methodological findings.** (ii) **H2 fails**: after removing problem-identity channels RegimeMamba drops by 0.0538 (RF 0.0163, MetaMamba 0.0040), so part of the gain rests on identity memory. (iii) **H3 fails**: no advantage in the early-window (first 10% of events) setting (0.9265 vs MetaMamba 0.9298, ns), so no early-warning claim is warranted. (iv) **the capacity control does not support "the gain comes from the regime"**: after the divide-by-zero defect was fixed and the K=1 single-state control re-run, the control behaves normally again (pooled OOF AUC=0.9454), yet the pooled OOF gain of K=4 over K=1 is only +0.0032 [-0.0051,+0.0122] (P(Δ≤0)=0.237), which misses the preregistered criterion (Δ>0.005 and P≤0.10); H6 therefore fails and **this paper does not claim that the gain comes from regime structure rather than model capacity**. (v) The learned regimes carry **interpretable behavioural semantics**: R2 is a "risk regime" (occupancy 0.268 for failing vs 0.207 for passing students, Mann-Whitney P<0.0001) whose occupancy alone discriminates failure at **AUC 0.6386**; R1 is a "good-state regime" (AUC 0.3783, i.e. reversed); and switch rate discriminates at AUC 0.3806 (reversed), correlating with behavioural **volume** (paste/run/submit counts, ρ≈0.22–0.28, P<0.0001) but not with rate-like measures — regime switching tracks activity shape, not efficiency. **The stratified and matched analysis of §6.8 further shows that both associations are largely re-encodings of behavioural engagement: after matching engagement level, R2 occupancy no longer separates failing from passing students (paired diff +0.008, P = 0.91) and the reversed switch association is no longer significant (paired diff −0.020, P = 0.26).**
 
-**Conclusion.** On CS1, explicit behavioural regime switching is **not** shown to be an effective structural inductive bias in this paper (the gain over the K=1 single-state control is not significant; H6 fails), but it **does not deliver discriminative power beyond tabular statistics**, and part of its gain comes from a problem-identity shortcut. The honest consequence is that RegimeMamba's **interpretability** (R2 occupancy as a directly displayable "duration in a risky state" indicator) is worth more than its accuracy. We position the model for **whole-cycle risk stratification and state explanation**, not early warning and not an accuracy race.
+**Conclusion.** On CS1, explicit behavioural regime switching is **not** shown to be an effective structural inductive bias in this paper (the gain over the K=1 single-state control is not significant; H6 fails), but it **does not deliver discriminative power beyond tabular statistics**, and part of its gain comes from a problem-identity shortcut. The honest consequence is that RegimeMamba's **interpretability** — turning behavioural state into a readable quantity — is worth more than its accuracy, but only part of that interpretability survives the confound check: **at matched engagement level, R2 occupancy no longer separates failing from passing students** (§6.8). We position the model for **whole-cycle risk stratification and state description**, not early warning, not an accuracy race, and not as a stand-alone "duration in a risky state" product.
 
 **Keywords**: learning analytics; selective state-space models; behavioural regimes; falsification studies; pre-registered evaluation; programming education; interpretability
 
@@ -61,7 +61,7 @@ One risk must be acknowledged in advance: **regimes may degenerate into proxies 
 
 1. **Method.** RegimeMamba composes a behavioural regime forward filter with regime-conditioned selective SSM dynamics, implemented with a **single scan** so that compute and tuning budgets stay symmetric with same-family models.
 2. **Methodology.** A **pre-registered falsification protocol** (H1–H6, thresholds fixed in advance including explicit failure conditions) and an explicit distinction between **two AUC calibers** (within-fold mean vs pooled OOF), reported side by side.
-3. **Empirical findings.** the gain of regime structure over K=1 is not significant (H6 fails), and it partly relies on identity, part of the gain depends on identity, and the regimes carry **interpretable risk semantics** (R2 occupancy alone: AUC 0.6386).
+3. **Empirical findings.** the gain of regime structure over K=1 is not significant (H6 fails), it partly relies on identity, and the regimes carry **interpretable risk semantics** (R2 occupancy alone: AUC 0.6386) — but §6.8 shows that roughly half of that association is explained by behavioural engagement volume.
 4. **Negative results.** A direct answer to "is state-space switching worth modelling on CS1": **worth it for explanation, not worth it for an accuracy race**.
 
 ---
@@ -328,14 +328,58 @@ RegimeMamba attains a weighted LOPO AUC of 0.6073, below the preregistered thres
 
 Switching tracks **behavioural volume**, not efficiency — consistent with §6.4: had regimes mainly encoded identity, this volume-aligned association would not be so regular.
 
-### 6.8 Summary of pre-registered criteria
+> **Caliber note.** The switch rate and regime occupancies in this section are computed on each student's **last 128 events**, whereas the behavioural statistics above are **whole-trajectory**; see §6.8 for the consequences of this caliber mismatch.
+
+### 6.8 Stratified and matched analysis of behavioural-volume confounding (closing the §6.7 loophole)
+
+The two observations of §6.7 — R2 occupancy associated with failure (standalone AUC 0.6386) and switch rate associated with failure **in reverse** (AUC 0.3806) — were read without any confound control. This section tests the "behavioural volume" confound with four instruments: rank-based partial Spearman (bootstrap, 2000 student resamples), volume stratification (within-stratum AUC + stratified fixed-effects regression), Mantel–Haenszel pooled OR, and a **volume-matched pair design** (each passing student matched to the failing student with the closest behavioural volume in z-space; matched standardised mean differences < 0.01).
+
+**Caliber note (a caliber discipline surfaced by this analysis).** The model's sequence representation is each student's **last 128 events** (left padding), so the switch rate and the regime occupancies are computed on that window, whereas the behavioural statistics of §6.7 (paste/run/submit counts) are **whole-trajectory**. The window event count is almost constant at 128 (CV = 0.046) and cannot serve as a volume proxy; the quantity that actually predicts failure is **whole-trajectory volume** (event count alone discriminates failure at AUC 0.159, reversed).
+
+**Size of the confounding path**:
+
+| Volume caliber | ρ(V, y) | ρ(V, switch) | ρ(switch, y) | product ρ(V,switch)·ρ(V,y) | residual | share explained by the confound path |
+|---|---|---|---|---|---|---|
+| whole-trajectory volume PCA1 (primary) | −0.5266 | +0.2594 | −0.1954 | −0.1366 | −0.0588 | 70% |
+| whole-trajectory event count | −0.5581 | +0.2173 | −0.1954 | −0.1213 | −0.0741 | 62% |
+| end-of-window span | −0.1181 | +0.2356 | −0.1954 | −0.0278 | −0.1676 | 14% |
+
+**Residual effect of switch after controlling for volume**:
+
+| Control set | partial ρ(switch, y) | 95% CI | P |
+|---|---|---|---|
+| none (raw) | −0.1954 | — | — |
+| whole-trajectory volume | −0.1002 | [−0.1883, −0.0059] | 0.030 |
+| volume + end-window span | −0.0835 | [−0.1722, +0.0086] | 0.070 (ns) |
+| volume block (3 covariates) | −0.0817 | [−0.1722, +0.0088] | 0.077 (ns) |
+| RF-28d OOF (contains all activity aggregates) | −0.0443 | [−0.1391, +0.0505] | 0.337 (ns) |
+
+Correspondingly, switch's OR falls from 0.664 unadjusted (P = 4.5e-05) to 0.833 with volume controlled (P = 0.131), 0.837 with stratified fixed effects (P = 0.145) and 0.759 on top of RF (P = 0.079); the Mantel–Haenszel pooled OR after stratifying by whole-trajectory volume tertiles is 0.76 (P = 0.289, **no longer significant after stratification**). Mechanistically, switch correlates positively with the final window's **span / inter-event gaps** (ρ = +0.236) and negatively with its **intensity** (ρ = −0.229) and with window activity (ρ = −0.385) — **switch is effectively measuring how sparse/discontinuous the end-of-term behaviour is**.
+
+**Volume-matched pair analysis** (each passing student matched to the closest-volume failing student; 159 pairs; matched SMD < 0.01):
+
+| Matching set | switch paired diff (FAIL−PASS) | P | SMD | R2 occupancy paired diff | P | SMD |
+|---|---|---|---|---|---|---|
+| whole-trajectory volume only | −0.0197 | 0.26 | −0.104 | +0.0077 | 0.91 | −0.016 |
+| volume + end-window recency | −0.0576 | 0.022 | −0.194 | +0.0096 | 0.65 | +0.025 |
+| window-level behaviour only (same window as the regimes) | −0.0424 | 0.003 | −0.257 | +0.0707 | 1.5e-07 | +0.449 |
+| all (volume + window level) | −0.0029 | 0.441 | −0.110 | +0.0128 | 0.36 | +0.032 |
+| whole-trajectory volume + RF score | −0.0755 | 0.0015 | −0.241 | −0.0367 | 0.0006 | −0.314 |
+
+**Reading.** Once **whole-trajectory volume** is balanced, the failing/passing difference in switch is no longer significant (paired diff −0.020, P = 0.26) and the difference in **R2 occupancy disappears entirely** (paired diff +0.008, P = 0.91). Matching on window-level behaviour alone leaves a large R2 difference (+0.071, SMD +0.45), but that design does **not** constrain whole-trajectory engagement, so R2 is still speaking for volume; once whole-trajectory volume enters the matching, the difference vanishes — the two lines of evidence corroborate each other.
+
+**Consequence (a revision of §6.7).** R2 occupancy's raw AUC 0.6386 and the reversed switch–failure association are **largely re-encodings of behavioural engagement volume**, not independent risk signals. The partial-correlation caliber agrees: ρ(R2, y) = +0.2268 → +0.1056 after controlling volume (P = 0.022; about 53% of the raw association removed); stratified fixed-effects regression gives OR = 1.11 (P = 0.473); MH pooled OR = 1.16 (P = 0.616).
+
+> **Two claims are therefore narrowed**: (i) §7.5 "switching is not risk" becomes "switching is **not an independent risk signal**"; (ii) §7.3 "R2 is a directly usable risk-state indicator" becomes "R2 is an **interpretable re-encoding of behavioural engagement**, not an independent risk signal". See §7.3 and §7.5.
+
+### 6.9 Summary of pre-registered criteria
 
 | Criterion | Threshold | Observed | Verdict |
 |---|---|---|---|
 | H1 discriminative gain | Δ≥+0.010 and P≤0.05 (pooled OOF) | Δ=+0.0431 [+0.0235,+0.0648], P=0.000 | ✅ pass (independent gain) |
 | H2 not an identity shortcut | deconfounded drop ≤0.020 | drop 0.0538 | ❌ fail (gain partly identity-driven) |
 | H3 early warning | first 10% ≥ MetaMamba at first 10% | Δ=−0.0033, ns | ❌ fail |
-| H4 regimes are real | occupancy≥5% / \|ρ\|≥0.3 / one regime associated with failure | min occupancy 0.240; max ρ +0.281 (P<0.0001, **below the 0.30 threshold**); R2 occupancy associated with failure (P<0.0001) | ⚠️ partial pass |
+| H4 regimes are real | occupancy≥5% / \|ρ\|≥0.3 / one regime associated with failure | min occupancy 0.240; max ρ +0.281 (P<0.0001, **below the 0.30 threshold**); R2 occupancy associated with failure (P<0.0001, **uncontrolled**; §6.8: about half explained by activity volume) | ⚠️ partial pass |
 | H5 cross-task generalisation | LOPO ≥ 0.6169 | 0.6073 < 0.6169 | ❌ fails |
 | H6 not a capacity artefact | K=4 clearly better than K=1 | Δ=+0.0032 [-0.0051,+0.0122], P=0.237 | ❌ fails (gain does not significantly exceed K=1) |
 
@@ -353,17 +397,30 @@ The comparison between the single-state control (K=1) and K=4 is the core eviden
 
 The deconfounded arm yields a clean decomposition: a substantial part of RegimeMamba's +0.0431 pooled-OOF advantage over MetaMamba disappears once identity channels are removed (they tie at −0.0065), and its deconfounded drop (0.0538) exceeds RF's (0.0163) and MetaMamba's (0.0040). The model therefore **cannot** be advertised as delivering a purely behavioural regime gain. A more accurate statement is that **regime mechanism and identity memory interact strongly**: when a model can explicitly organise behavioural states, it also exploits problem-identity priors more aggressively — a liability when one model must serve many assignments or courses.
 
-### 7.3 Finding 3: R2 is a directly usable risk-state indicator
+### 7.3 Finding 3: R2 is an interpretable re-encoding of behavioural engagement, not an independent risk signal
 
-R2 occupancy discriminates failure at AUC 0.6386 on its own (Mann-Whitney P<0.0001) and is complementary (opposite in sign) to R1. Unlike a black-box risk score, "fraction of time in a high-risk behavioural state" is understandable to teachers and counsellors and can be tracked weekly. It also delivers a cautionary note: **interpretable regimes do not mean "high-risk regime = high activity"** — switch rate correlates with behavioural volume but not with efficiency, so regimes capture activity shape and rhythm rather than effort intensity.
+R2 occupancy discriminates failure at AUC 0.6386 on its own (Mann-Whitney P<0.0001), is complementary (opposite in sign) to R1, and is formally an indicator that teachers and counsellors can understand and track weekly. But the stratified and matched analysis of §6.8 shows that **about 53% of this association is explained by behavioural volume and it disappears once volume is balanced** (paired diff +0.008, P = 0.91; partial ρ = +0.106 after volume control, P = 0.022; stratified fixed-effects OR = 1.11, P = 0.473; MH pooled OR = 1.16, P = 0.616). We therefore **narrow** the claim: R2 is better read as an **interpretable re-encoding of behavioural engagement intensity and rhythm** than as a risk-state indicator independent of engagement.
+
+It also delivers a cautionary note: **interpretable regimes do not mean "high-risk regime = high activity"** — switch rate correlates with behavioural volume but not with efficiency, so regimes capture activity shape and rhythm rather than effort intensity.
+
+**Product implication.** If the "duration in a risky state" indicator is kept in any product form, it must be shown **next to** engagement intensity, its copy may only claim "engagement intensity and rhythm", and it must not be sold as an early-warning signal in its own right: at matched engagement level, failing and passing students do not differ in R2 occupancy.
 
 ### 7.4 Finding 4: caliber dependence is itself a governance problem
 
 The same results yield opposite conclusions under two AUC calibers (RegimeMamba vs MetaMamba: within-fold +0.0034 ns, pooled +0.0431 significant). This is not unique to this paper but is a general risk of student-level small-sample OOF evaluation. We recommend: **(i)** always report both calibers for student-level AUC; **(ii)** report cross-fold comparability explicitly (the gap between pooled and within-fold is a rough proxy); **(iii)** re-check pivotal claims with a **single held-out model** (temporal extrapolation or external data).
 
-### 7.5 Finding 5: switching is not risk
+### 7.5 Finding 5: the switch rate is not an independent risk signal (the original loophole is now closed)
 
-Switch rate discriminates failure at AUC 0.3806 (reversed). Intuitively "frequent state switching = instability = risk", but the data disagree: students who switch more are more likely to pass. The likely cause is **activity-volume confounding** (switch rate correlates with behavioural volume at ρ≈+0.25, and busier students switch more), or the possibility that the true risk signal is **dwelling** in a state rather than switching often. This deserves follow-up with volume-stratified analyses (partial correlation, stratified regression).
+Switch rate discriminates failure at AUC 0.3806 (reversed). Intuitively "frequent state switching = instability = risk", but the data disagree: students who switch more are more likely to pass. The stratified and matched analysis of §6.8 **separates** the two explanations that §6.7 left side by side: **the activity-volume confound is real and accounts for essentially the whole effect.**
+
+- Confound path: ρ(switch, whole-trajectory volume) = +0.2594 and ρ(whole-trajectory volume, failure) = −0.5266; their product already covers 70% of the raw association.
+- Controlling whole-trajectory volume reduces the partial ρ from −0.1954 to −0.1002 (P = 0.030); adding the end-window span makes it non-significant (P = 0.070); on top of the RF-28d OOF score it vanishes entirely (P = 0.337, −0.044).
+- Mantel–Haenszel pooled OR after stratifying by volume tertiles: 0.76 (P = 0.289 — no longer significant after stratification).
+- After volume matching (159 pairs, SMD < 0.01) the failing/passing difference in switch is no longer significant (paired diff −0.020, P = 0.26).
+
+Mechanistically, switch correlates positively with the final window's **span / inter-event gaps** (ρ = +0.236) and negatively with its **intensity** (ρ = −0.229) and window activity (ρ = −0.385): **switch is effectively measuring how sparse/discontinuous the end-of-term behaviour is**, rather than an independent "state instability".
+
+**The claim is therefore restated from "switching is not risk" to "switching is not an independent risk signal"**: the data support neither a deliverable rule ("fewer switches = danger") nor an independent reversed association; switch is a proxy for behavioural volume / end-of-term sparsity and must not be used as a risk indicator in its own right.
 
 ### 7.6 Relationship to this project's mainline (CS1-SHR / CS1-FSP)
 
@@ -392,6 +449,7 @@ Earlier fusion experiments in this project found that fusion weights drift with 
 3. **No cross-task generalisation advantage.** The weighted LOPO AUC is 0.6073, below the same-protocol MetaMamba (0.6169) -> no cross-task generalisation claim is made.
 4. **No generalisation beyond CS1.** Single dataset, single course; no external-dataset validation.
 5. **No claim that regime semantics are fully explained.** R2/R1 currently correspond to behaviour only statistically; no manual coding validation has been performed.
+6. **No claim that regime statistics are independent risk signals.** Once behavioural engagement volume is controlled, R2 occupancy no longer separates failing from passing students (matched paired diff +0.008, P = 0.91), and the switch rate carries no residual information either (P = 0.26 after matching; ns on top of the RF baseline).
 
 ### 8.2 Validity threats
 
@@ -411,16 +469,16 @@ On CS1 — many events, few students — this paper tests the "behavioural regim
 2. **Not an accuracy lead.** It ties the tabular baseline and trails it after deconfounding; it is **not** a new accuracy reference point.
 3. **Partly identity-driven.** The deconfounded drop of 0.0538 exceeds the pre-registered threshold → **H2 fails**.
 4. **No early warning.** No advantage in the first-10% setting → **H3 fails**.
-5. **Interpretability is its real value.** R2 is a behaviour state significantly associated with failure (standalone AUC 0.6386) and can be productised as "duration in a risky state".
+5. **Interpretability is its most plausible real value, at a discount.** R2 occupancy reaches 0.6386 standalone, but §6.8 shows the failing/passing difference disappears once engagement is matched: it is better read as an **interpretable re-encoding of behavioural engagement** — usable descriptively, but not sufficient to support a stand-alone "duration in a risky state" product.
 6. **A methodological by-product.** Two AUC calibers can yield opposite conclusions in student-level small-sample OOF evaluation; we recommend reporting both.
 
-In one sentence: **RegimeMamba's value is that it turns "behavioural state" into a measurable, interpretable, productisable object — not that it raises AUC by a point.**
+In one sentence: **RegimeMamba's value is that it turns "behavioural state" into a measurable, interpretable object — not that it raises AUC by a point; but this round of evidence shows that object's information content overlaps heavily with behavioural engagement volume and must be read next to it.**
 
 ---
 
 ## Appendix A · Per-cell result data
 
-Full data: `docs/REGIMEMAMBA_DATA_20261108.csv` (per-cell metrics and baselines), `docs/REGIMEMAMBA_RESULTS_20261108.md` (experiment report), `results/regimemamba/*/results.json` and `fold_metrics.csv` (raw per-fold metrics).
+Full data: `docs/REGIMEMAMBA_DATA_20261108.csv` (per-cell metrics and baselines), `docs/REGIMEMAMBA_RESULTS_20261108.md` (experiment report), `results/regimemamba/*/results.json` and `fold_metrics.csv` (raw per-fold metrics); the stratification / matching detail of §6.8 is in `docs/REGIMEMAMBA_STRATIFIED_20261110.csv` and `docs/REGIMEMAMBA_STRATIFIED_20261110_studentlevel.csv`.
 
 ## Appendix B · Reproduction commands
 
